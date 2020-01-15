@@ -4,7 +4,7 @@
 # In[4]:
 
 
-from keras import backend as K
+
 from keras.layers import *
 from keras.models import *
 
@@ -14,7 +14,7 @@ from keras.models import *
 
 def linear_regression(X_shape):
     X = Input((X_shape,))
-    out = Dense(1, activation = "linear")(X)
+    out = Dense(1, activation = None )(X)
     model = Model(inputs = X , output = out)
     return model 
 
