@@ -2,6 +2,8 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="19135879-a350-4a99-8f3d-95f69bbd1508" name="Default Changelist" comment="">
+      <change afterPath="$PROJECT_DIR$/Notebooks/Linear_Regression.ipynb" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Notebooks/Linear_Regression.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Notebooks/linear_reg python3final7_keras.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/Notebooks/linear_reg python3final7_keras.ipynb" afterDir="false" />
     </list>
@@ -31,9 +33,13 @@
     <property name="ASKED_ADD_EXTERNAL_FILES" value="true" />
     <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
     <property name="SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/Notebooks" />
     <property name="settings.editor.selected.configurable" value="com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable" />
   </component>
   <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/Notebooks" />
+    </key>
     <key name="MoveFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$/Notebooks" />
     </key>
@@ -117,7 +123,14 @@
       <option name="project" value="LOCAL" />
       <updated>1578926304507</updated>
     </task>
-    <option name="localTasksCounter" value="5" />
+    <task id="LOCAL-00005" summary="Update keras Notebook for Linear Regression">
+      <created>1578928752425</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1578928752425</updated>
+    </task>
+    <option name="localTasksCounter" value="6" />
     <servers />
   </component>
   <component name="VcsManagerConfiguration">
@@ -125,17 +138,18 @@
     <MESSAGE value="Change naming convention in Jupyter notebook" />
     <MESSAGE value="Plot of EEG and stimuli Channels" />
     <MESSAGE value="add Keras notebook" />
-    <option name="LAST_COMMIT_MESSAGE" value="add Keras notebook" />
+    <MESSAGE value="Update keras Notebook for Linear Regression" />
+    <option name="LAST_COMMIT_MESSAGE" value="Update keras Notebook for Linear Regression" />
   </component>
   <component name="WindowStateProjectService">
     <state x="451" y="210" key="#com.intellij.execution.impl.EditConfigurationsDialog" timestamp="1578400384830">
       <screen x="67" y="27" width="1853" height="1053" />
     </state>
     <state x="451" y="210" key="#com.intellij.execution.impl.EditConfigurationsDialog/67.27.1853.1053@67.27.1853.1053" timestamp="1578400384830" />
-    <state x="600" y="149" width="777" height="807" key="CommitChangelistDialog2" timestamp="1578926304424">
+    <state x="600" y="149" width="777" height="807" key="CommitChangelistDialog2" timestamp="1578928752316">
       <screen x="67" y="27" width="1853" height="1053" />
     </state>
-    <state x="600" y="149" width="777" height="807" key="CommitChangelistDialog2/67.27.1853.1053@67.27.1853.1053" timestamp="1578926304424" />
+    <state x="600" y="149" width="777" height="807" key="CommitChangelistDialog2/67.27.1853.1053@67.27.1853.1053" timestamp="1578928752316" />
     <state width="915" height="344" key="GridCell.Tab.0.bottom" timestamp="1578588240777">
       <screen x="67" y="27" width="1853" height="1053" />
     </state>
@@ -168,29 +182,29 @@
       <screen x="67" y="27" width="1853" height="1053" />
     </state>
     <state width="915" height="344" key="GridCell.Tab.1.right/67.27.1853.1053@67.27.1853.1053" timestamp="1578588240779" />
-    <state x="793" y="265" width="390" height="574" key="RollbackChangesDialog" timestamp="1578910386040">
+    <state x="793" y="265" width="390" height="574" key="RollbackChangesDialog" timestamp="1579014932101">
       <screen x="67" y="27" width="1853" height="1053" />
     </state>
-    <state x="793" y="265" width="390" height="574" key="RollbackChangesDialog/67.27.1853.1053@67.27.1853.1053" timestamp="1578910386040" />
+    <state x="793" y="265" width="390" height="574" key="RollbackChangesDialog/67.27.1853.1053@67.27.1853.1053" timestamp="1579014932101" />
     <state x="482" y="187" key="SettingsEditor" timestamp="1578586795514">
       <screen x="67" y="27" width="1853" height="1053" />
     </state>
     <state x="482" y="187" key="SettingsEditor/67.27.1853.1053@67.27.1853.1053" timestamp="1578586795514" />
-    <state x="588" y="288" width="800" height="528" key="Vcs.Push.Dialog.v2" timestamp="1578928711327">
+    <state x="588" y="288" width="800" height="528" key="Vcs.Push.Dialog.v2" timestamp="1578928760058">
       <screen x="67" y="27" width="1853" height="1053" />
     </state>
-    <state x="588" y="288" width="800" height="528" key="Vcs.Push.Dialog.v2/67.27.1853.1053@67.27.1853.1053" timestamp="1578928711327" />
-    <state x="649" y="380" key="com.intellij.ide.util.TipDialog" timestamp="1578910260416">
+    <state x="588" y="288" width="800" height="528" key="Vcs.Push.Dialog.v2/67.27.1853.1053@67.27.1853.1053" timestamp="1578928760058" />
+    <state x="649" y="380" key="com.intellij.ide.util.TipDialog" timestamp="1579084566053">
       <screen x="67" y="27" width="1853" height="1053" />
     </state>
-    <state x="649" y="380" key="com.intellij.ide.util.TipDialog/67.27.1853.1053@67.27.1853.1053" timestamp="1578910260416" />
+    <state x="649" y="380" key="com.intellij.ide.util.TipDialog/67.27.1853.1053@67.27.1853.1053" timestamp="1579084566053" />
     <state x="761" y="472" key="com.intellij.openapi.vcs.update.UpdateOrStatusOptionsDialogupdate-v2" timestamp="1578412451539">
       <screen x="67" y="27" width="1853" height="1053" />
     </state>
     <state x="761" y="472" key="com.intellij.openapi.vcs.update.UpdateOrStatusOptionsDialogupdate-v2/67.27.1853.1053@67.27.1853.1053" timestamp="1578412451539" />
-    <state x="705" y="346" width="576" height="413" key="git4idea.merge.GitPullDialog" timestamp="1578923357831">
+    <state x="705" y="346" width="566" height="413" key="git4idea.merge.GitPullDialog" timestamp="1579014954540">
       <screen x="67" y="27" width="1853" height="1053" />
     </state>
-    <state x="705" y="346" width="576" height="413" key="git4idea.merge.GitPullDialog/67.27.1853.1053@67.27.1853.1053" timestamp="1578923357831" />
+    <state x="705" y="346" width="566" height="413" key="git4idea.merge.GitPullDialog/67.27.1853.1053@67.27.1853.1053" timestamp="1579014954540" />
   </component>
 </project>
