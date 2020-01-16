@@ -4,7 +4,6 @@
     <list default="true" id="19135879-a350-4a99-8f3d-95f69bbd1508" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Notebooks/Linear_Regression.py" beforeDir="false" afterPath="$PROJECT_DIR$/Notebooks/Linear_Regression.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Notebooks/linear_reg python3final7.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/Notebooks/linear_reg python3final7.ipynb" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Notebooks/linear_reg python3final7_keras.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/Notebooks/linear_reg python3final7_keras.ipynb" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -137,7 +136,14 @@
       <option name="project" value="LOCAL" />
       <updated>1579103334696</updated>
     </task>
-    <option name="localTasksCounter" value="7" />
+    <task id="LOCAL-00007" summary="Function to load EEG data of all subjects">
+      <created>1579107310481</created>
+      <option name="number" value="00007" />
+      <option name="presentableId" value="LOCAL-00007" />
+      <option name="project" value="LOCAL" />
+      <updated>1579107310481</updated>
+    </task>
+    <option name="localTasksCounter" value="8" />
     <servers />
   </component>
   <component name="VcsManagerConfiguration">
@@ -147,17 +153,18 @@
     <MESSAGE value="add Keras notebook" />
     <MESSAGE value="Update keras Notebook for Linear Regression" />
     <MESSAGE value="Add TenosorBoard support to keras bersion of Linear Regression" />
-    <option name="LAST_COMMIT_MESSAGE" value="Add TenosorBoard support to keras bersion of Linear Regression" />
+    <MESSAGE value="Function to load EEG data of all subjects" />
+    <option name="LAST_COMMIT_MESSAGE" value="Function to load EEG data of all subjects" />
   </component>
   <component name="WindowStateProjectService">
     <state x="451" y="210" key="#com.intellij.execution.impl.EditConfigurationsDialog" timestamp="1578400384830">
       <screen x="67" y="27" width="1853" height="1053" />
     </state>
     <state x="451" y="210" key="#com.intellij.execution.impl.EditConfigurationsDialog/67.27.1853.1053@67.27.1853.1053" timestamp="1578400384830" />
-    <state x="600" y="149" width="777" height="807" key="CommitChangelistDialog2" timestamp="1579103334356">
+    <state x="600" y="149" width="777" height="807" key="CommitChangelistDialog2" timestamp="1579107310348">
       <screen x="67" y="27" width="1853" height="1053" />
     </state>
-    <state x="600" y="149" width="777" height="807" key="CommitChangelistDialog2/67.27.1853.1053@67.27.1853.1053" timestamp="1579103334356" />
+    <state x="600" y="149" width="777" height="807" key="CommitChangelistDialog2/67.27.1853.1053@67.27.1853.1053" timestamp="1579107310348" />
     <state width="915" height="344" key="GridCell.Tab.0.bottom" timestamp="1578588240777">
       <screen x="67" y="27" width="1853" height="1053" />
     </state>
@@ -198,10 +205,10 @@
       <screen x="67" y="27" width="1853" height="1053" />
     </state>
     <state x="482" y="187" key="SettingsEditor/67.27.1853.1053@67.27.1853.1053" timestamp="1578586795514" />
-    <state x="588" y="288" width="800" height="528" key="Vcs.Push.Dialog.v2" timestamp="1579103347039">
+    <state x="588" y="288" width="800" height="528" key="Vcs.Push.Dialog.v2" timestamp="1579107319174">
       <screen x="67" y="27" width="1853" height="1053" />
     </state>
-    <state x="588" y="288" width="800" height="528" key="Vcs.Push.Dialog.v2/67.27.1853.1053@67.27.1853.1053" timestamp="1579103347039" />
+    <state x="588" y="288" width="800" height="528" key="Vcs.Push.Dialog.v2/67.27.1853.1053@67.27.1853.1053" timestamp="1579107319174" />
     <state x="649" y="380" key="com.intellij.ide.util.TipDialog" timestamp="1579084566053">
       <screen x="67" y="27" width="1853" height="1053" />
     </state>
@@ -210,9 +217,9 @@
       <screen x="67" y="27" width="1853" height="1053" />
     </state>
     <state x="761" y="472" key="com.intellij.openapi.vcs.update.UpdateOrStatusOptionsDialogupdate-v2/67.27.1853.1053@67.27.1853.1053" timestamp="1578412451539" />
-    <state x="705" y="346" width="566" height="413" key="git4idea.merge.GitPullDialog" timestamp="1579014954540">
+    <state x="705" y="346" width="566" height="413" key="git4idea.merge.GitPullDialog" timestamp="1579173211515">
       <screen x="67" y="27" width="1853" height="1053" />
     </state>
-    <state x="705" y="346" width="566" height="413" key="git4idea.merge.GitPullDialog/67.27.1853.1053@67.27.1853.1053" timestamp="1579014954540" />
+    <state x="705" y="346" width="566" height="413" key="git4idea.merge.GitPullDialog/67.27.1853.1053@67.27.1853.1053" timestamp="1579173211515" />
   </component>
 </project>

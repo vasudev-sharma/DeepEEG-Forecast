@@ -7,22 +7,19 @@
 
 from keras.layers import *
 from keras.models import *
-
+from keras import initializers
 
 # In[5]:
 
 
 def linear_regression(X_shape):
     X = Input((X_shape,))
-    out = Dense(1, activation = None )(X)
+    rng = initializers.random_uniform(0, 1)
+    out = Dense(1, activation = "linear", kernel_initializer = rng )(X)
     model = Model(inputs = X , output = out)
     return model 
 
     
-
-
-# In[ ]:
-
 
 
 
