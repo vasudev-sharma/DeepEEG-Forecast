@@ -14,8 +14,8 @@ from keras import initializers
 
 def linear_regression(X_shape):
     X = Input((X_shape,))
-    rng = initializers.random_uniform(0, 1)
-    out = Dense(1, activation = "linear", kernel_initializer = rng )(X)
+    rng = initializers.random_normal(0, 1)
+    out = Dense(1, activation = "linear", kernel_initializer = "normal" )(X)
     model = Model(inputs = X , output = out)
     return model 
 
