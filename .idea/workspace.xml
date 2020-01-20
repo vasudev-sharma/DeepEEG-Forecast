@@ -3,8 +3,6 @@
   <component name="ChangeListManager">
     <list default="true" id="19135879-a350-4a99-8f3d-95f69bbd1508" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Notebooks/Linear_Regression.py" beforeDir="false" afterPath="$PROJECT_DIR$/Notebooks/Linear_Regression.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Notebooks/linear_reg python3final7.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/Notebooks/linear_reg python3final7.ipynb" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Notebooks/linear_reg python3final7_keras.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/Notebooks/linear_reg python3final7_keras.ipynb" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -144,7 +142,14 @@
       <option name="project" value="LOCAL" />
       <updated>1579107310481</updated>
     </task>
-    <option name="localTasksCounter" value="8" />
+    <task id="LOCAL-00008" summary="Update Notebooks">
+      <created>1579375951519</created>
+      <option name="number" value="00008" />
+      <option name="presentableId" value="LOCAL-00008" />
+      <option name="project" value="LOCAL" />
+      <updated>1579375951520</updated>
+    </task>
+    <option name="localTasksCounter" value="9" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -166,7 +171,8 @@
     <MESSAGE value="Update keras Notebook for Linear Regression" />
     <MESSAGE value="Add TenosorBoard support to keras bersion of Linear Regression" />
     <MESSAGE value="Function to load EEG data of all subjects" />
-    <option name="LAST_COMMIT_MESSAGE" value="Function to load EEG data of all subjects" />
+    <MESSAGE value="Update Notebooks" />
+    <option name="LAST_COMMIT_MESSAGE" value="Update Notebooks" />
   </component>
   <component name="WindowStateProjectService">
     <state x="451" y="210" key="#com.intellij.execution.impl.EditConfigurationsDialog" timestamp="1578400384830">
