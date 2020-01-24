@@ -4,7 +4,9 @@
     <list default="true" id="19135879-a350-4a99-8f3d-95f69bbd1508" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Notebooks/linear_reg python3final7_keras.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/Notebooks/linear_reg python3final7_keras.ipynb" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Notebooks/vanilla_RNN python3final7_keras.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/Notebooks/vanilla_RNN python3final7_keras.ipynb" afterDir="false" />
     </list>
+    <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -157,7 +159,9 @@
       <map>
         <entry key="MAIN">
           <value>
-            <State />
+            <State>
+              <option name="COLUMN_ORDER" />
+            </State>
           </value>
         </entry>
       </map>
