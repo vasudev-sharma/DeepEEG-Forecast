@@ -3,7 +3,6 @@
   <component name="ChangeListManager">
     <list default="true" id="19135879-a350-4a99-8f3d-95f69bbd1508" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Notebooks/linear_reg python3final7_keras.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/Notebooks/linear_reg python3final7_keras.ipynb" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Notebooks/vanilla_RNN python3final7_keras.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/Notebooks/vanilla_RNN python3final7_keras.ipynb" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -151,7 +150,14 @@
       <option name="project" value="LOCAL" />
       <updated>1579375951520</updated>
     </task>
-    <option name="localTasksCounter" value="9" />
+    <task id="LOCAL-00009" summary="Plot to visualize Predicted Time Series">
+      <created>1579881877338</created>
+      <option name="number" value="00009" />
+      <option name="presentableId" value="LOCAL-00009" />
+      <option name="project" value="LOCAL" />
+      <updated>1579881877338</updated>
+    </task>
+    <option name="localTasksCounter" value="10" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -176,7 +182,8 @@
     <MESSAGE value="Add TenosorBoard support to keras bersion of Linear Regression" />
     <MESSAGE value="Function to load EEG data of all subjects" />
     <MESSAGE value="Update Notebooks" />
-    <option name="LAST_COMMIT_MESSAGE" value="Update Notebooks" />
+    <MESSAGE value="Plot to visualize Predicted Time Series" />
+    <option name="LAST_COMMIT_MESSAGE" value="Plot to visualize Predicted Time Series" />
   </component>
   <component name="WindowStateProjectService">
     <state x="451" y="210" key="#com.intellij.execution.impl.EditConfigurationsDialog" timestamp="1578400384830">
