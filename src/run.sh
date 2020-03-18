@@ -1,3 +1,3 @@
-export DATA = 
 
-python -m src.train
+
+python -m train

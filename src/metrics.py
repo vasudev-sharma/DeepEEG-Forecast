@@ -1,5 +1,6 @@
 
 import numpy as np
+
 def compute_correlation(true, pred):
     true = true.squeeze()
     pred = pred.squeeze()
@@ -8,3 +9,8 @@ def compute_correlation(true, pred):
     return corr_coef 
     
     
+def list_correlation(electi, true, pred):
+    l = []
+    for i in range(len(electi)):
+        l.append(compute_correlation(true[:, i], pred[:, i]))
+

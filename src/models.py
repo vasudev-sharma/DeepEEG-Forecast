@@ -1,20 +1,27 @@
 
-from tensorflow.keras.layers import *
-from tensorflow.keras.models import *
-from tensorflow.keras import initializers
+from keras.layers import Input, Dense, Conv1D, Flatten, LSTM, MaxPooling1D, SimpleRNN, LeakyReLU, Reshape
+from keras.models import Model
+from keras import initializers
+
 
 
 #Linear Regression Model
-def linear_regression(X_shape):
-    X = Input((X_shape,))
-    rng = initializers.random_normal(0, 1)
+def linear_regression(dim):
+
+    _, features = dim 
+
+    inp = Input((features,))
+    X = inp
     out = Dense(1, activation = "linear", kernel_initializer = "normal" )(X)
-    model = Model(inputs = X , output = out)
+    model = Model(inputs = inp , output = out)
     return model 
 
 
 #COnvolutional Neural Network
-def conv_1D(window, layers, features):
+def conv_1D(dim, layers, source_Y):
+
+    _, window, features = dim
+
     inp = Input([window, features])
     X = inp
     
@@ -43,10 +50,12 @@ def conv_1D(window, layers, features):
 
 
 #RNN
-def vanilla_RNN(layers, units, features):
-    inp = Input([stim, features])
+def vanilla_RNN(dim, layers, units, source_Y):
+
+    _, window, features = dim
+    inp = Input([window, features])
     X = inp
-    for i in range(layers - 1):
+    for _ in range(layers - 1):
       X = SimpleRNN(units, return_sequences = True)(X)
     X = SimpleRNN(units)(X)
     out = Dense(len(source_Y), activation = "linear", kernel_initializer = 'normal')(X)
@@ -58,10 +67,12 @@ def vanilla_RNN(layers, units, features):
 
 
 #RNN
-def vanilla_LSTM(layers, units, features):
-    inp = Input([stim, features])
+def vanilla_LSTM(dim, layers, units, source_Y):
+
+    _, window, features = dim
+    inp = Input([window, features])
     X = inp
-    for i in range(layers - 1):
+    for _ in range(layers - 1):
       X = LSTM(units, return_sequences = True)(X)
     X = LSTM(units)(X)
     out = Dense(len(source_Y), activation = "linear", kernel_initializer = 'normal')(X)
@@ -70,3 +81,11 @@ def vanilla_LSTM(layers, units, features):
     model = Model(inputs = inp, outputs = out)
     return model
 
+
+def get_model():
+
+  MODELS = {"LR":linear_regression,
+            "LSTM": vanilla_LSTM, 
+            "CNN": conv_1D, 
+            "RNN":vanilla_RNN}
+  return MODELS
