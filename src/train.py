@@ -1,4 +1,5 @@
 import os
+import json
 from keras import optimizers
 from input import data
 from models import get_model
@@ -53,7 +54,15 @@ if __name__ == "__main__":
         validation_data = (valid_X, valid_Y), 
         verbose = 1,
         )
-
+    #Predict the Y values for the given test set
     predictions = model.predict(test_X, verbose = 1,  callbacks=[reduce_lr])
+
+    #Compute Correlation coefficient 
     corr = compute_correlation(predictions, test_Y)
     print("The value of correlation is for electrode {} is {}", format(pred, corr))
+
+
+    #Dump the values in json file
+    data= {"Electrode_"+pred:corr}
+    with open("corr_dat.json", "a") as write_file:
+        json.dump(data, write_file)
