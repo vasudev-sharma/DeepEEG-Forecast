@@ -3,6 +3,7 @@ from keras import optimizers
 from input import data
 from models import get_model
 from metrics import compute_correlation
+from keras.callbacks import ReduceLROnPlateau
 
 
 if __name__ == "__main__":
@@ -13,11 +14,15 @@ if __name__ == "__main__":
     test_X, test_Y = test
 
     #Parameters of model
-    training_epochs = 100
-    batch_size = train_X.shape[0]
+    training_epochs = 200
+    batch_size = 1024
     layers = 1
     units = 3
-    learning_rate = 0.1
+    learning_rate = 0.005
+    
+
+    reduce_lr = ReduceLROnPlateau(monitor='val_loss', factor=0.1,
+                              patience=10, min_lr=0.00001)
     
 
     #Set up the Optimizers
@@ -25,11 +30,11 @@ if __name__ == "__main__":
     adam = optimizers.Adam(lr = learning_rate)
     rmsprop = optimizers.RMSprop(lr = learning_rate)
 
-    model = get_model()["LR"]
-    model = model(train_X.shape)
+    model = get_model()["CNN"]
+    model = model(train_X.shape, layers, train_Y.shape[-1])
 
     #Compile the model4
-    model.compile(loss = 'mse', optimizer = sgd, metrics= ['mse'])
+    model.compile(loss = 'mse', optimizer = sgd, metrics= ['mse'], )
 
     print(model.summary())
 
@@ -43,6 +48,6 @@ if __name__ == "__main__":
         verbose = 1,
         )
 
-    predictions = model.predict(test_X, verbose = 1)
+    predictions = model.predict(test_X, verbose = 1,  callbacks=[reduce_lr])
 
     print("The value of correlation is {}".format(compute_correlation(predictions, test_Y)))

@@ -1,5 +1,5 @@
 
-from keras.layers import Input, Dense, Conv1D, Flatten, LSTM, MaxPooling1D, SimpleRNN, LeakyReLU, Reshape
+from keras.layers import *
 from keras.models import Model
 from keras import initializers
 
@@ -26,24 +26,30 @@ def conv_1D(dim, layers, source_Y):
     X = inp
     
     X = Conv1D(filters = 16, kernel_size = 5)(X)
-    X = LeakyReLU()(X)
+    X= BatchNormalization()(X)
+    X = ELU()(X)
+    X= Dropout(0.1)(X)
     X = MaxPooling1D(pool_size= 2)(X)
 
   
   
-    X = Conv1D(filters = 40, kernel_size = 5)(X)
-    X = LeakyReLU()(X)
-    X = MaxPooling1D(pool_size= 2)(X)
+    X = Conv1D(filters = 40, kernel_size = 3)(X)
+    X= BatchNormalization()(X)
+    X = ELU()(X)
+    X= Dropout(0.1)(X)
+    #X = MaxPooling1D(pool_size= 2)(X)
 
 
-    X = Conv1D(filters = 40, kernel_size = 5)(X)
-    X = LeakyReLU()(X)
+    X = Conv1D(filters = 40, kernel_size = 3)(X)
+    X= BatchNormalization()(X)
+    X = ELU()(X)
+    X= Dropout(0.1)(X)
     X = MaxPooling1D(pool_size= 2)(X)
     
     X = Flatten()(X)
     #out = Activation("linear")(X)
     #X = Dense(50, activation = "relu")(X)
-    out = Dense(len(source_Y), activation = "linear",  kernel_initializer = 'normal')(X)
+    out = Dense(source_Y, activation = "linear",  kernel_initializer = 'normal')(X)
     
     model = Model(inputs = inp, outputs = out)
     return model
@@ -58,7 +64,7 @@ def vanilla_RNN(dim, layers, units, source_Y):
     for _ in range(layers - 1):
       X = SimpleRNN(units, return_sequences = True)(X)
     X = SimpleRNN(units)(X)
-    out = Dense(len(source_Y), activation = "linear", kernel_initializer = 'normal')(X)
+    out = Dense(source_Y, activation = "linear", kernel_initializer = 'normal')(X)
     #out = Lambda(lambda x: x * 2)(X)
     
     model = Model(inputs = inp, outputs = out)
@@ -75,7 +81,7 @@ def vanilla_LSTM(dim, layers, units, source_Y):
     for _ in range(layers - 1):
       X = LSTM(units, return_sequences = True)(X)
     X = LSTM(units)(X)
-    out = Dense(len(source_Y), activation = "linear", kernel_initializer = 'normal')(X)
+    out = Dense(source_Y, activation = "linear", kernel_initializer = 'normal')(X)
     #out = Lambda(lambda x: x * 2)(X)
     
     model = Model(inputs = inp, outputs = out)
