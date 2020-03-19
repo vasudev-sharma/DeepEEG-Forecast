@@ -5,9 +5,15 @@ from models import get_model
 from metrics import compute_correlation
 from keras.callbacks import ReduceLROnPlateau
 
+pred = os.environ["pred"]
+
 
 if __name__ == "__main__":
-    train, valid, test = data()
+    
+    
+
+    print("The predicted value is ", pred)
+    train, valid, test = data(int(pred), "3", "2")
 
     train_X, train_Y = train
     valid_X, valid_Y = valid
@@ -15,7 +21,7 @@ if __name__ == "__main__":
 
     #Parameters of model
     training_epochs = 200
-    batch_size = 1024
+    batch_size = 512
     layers = 1
     units = 3
     learning_rate = 0.005
@@ -49,5 +55,5 @@ if __name__ == "__main__":
         )
 
     predictions = model.predict(test_X, verbose = 1,  callbacks=[reduce_lr])
-
-    print("The value of correlation is {}".format(compute_correlation(predictions, test_Y)))
+    corr = compute_correlation(predictions, test_Y)
+    print("The value of correlation is for electrode {} is {}", format(pred, corr))

@@ -134,24 +134,25 @@ def split_trials(trials):
   return trials_train, trials_valid, trials_test
 
  
-def get_info():
+def get_info(pred, relation, response):
 
-    eltmp = input ('Enter the electrode number:')
-    electi = list(map(int, eltmp.split()))    #separation of the different responses and recovery in the form of a list of integers
-    print (type(electi))
+    electi = [i for i in range(1, 65) if i!=pred]
+    #electi = list(map(int, eltmp.split()))    #separation of the different responses and recovery in the form of a list of integers
+    #print (type(electi))
     print(electi)
 
-    window = input ('Enter the number of stimuli:')
-    window = int(window)
+    window = 160
 
-    n_channel = input('Enter  the chanel number for which you want your predicion: ')
-    n_channel = list(map(int, n_channel.split()))
+    #n_channel = input('Enter  the chanel number for which you want your predicion: ')
+
+    n_channel = [pred]
+    print("The value of channel to be predicted is ", n_channel)
 
 
-    relation = input('Please define what should be predicted (1 for EEG from stimulus or 2 for stimulus from EEG or 3 for EEG forecasting ):')
+    #relation = input('Please define what should be predicted (1 for EEG from stimulus or 2 for stimulus from EEG or 3 for EEG forecasting ):')
 
     if relation == '1':
-        response = input("Do you want to embed information of EEG as well ? ( 1 for yes or 2 for no)")
+        #response = input("Do you want to embed information of EEG as well ? ( 1 for yes or 2 for no)")
         if response == "2":
             source_Y = electi   #retrieving the electrode number as a whole number - implies that there is only one electrode chosen in this direction
             source_X = [0]          #conversion of the stimuli line in the form of a list - necessary for the for loop: see below - extraction X
@@ -165,7 +166,7 @@ def get_info():
         source_X = electi
         
     elif relation == '3':
-        response = input("Do you want to embed information of Stimuli as well ? ( 1 for yes or 2 for no)") 
+        #response = input("Do you want to embed information of Stimuli as well ? ( 1 for yes or 2 for no)") 
         if response == "2":
             source_Y = n_channel
             source_X = electi
@@ -175,9 +176,9 @@ def get_info():
 
     return source_X, source_Y, window
 
-def data():
+def data(pred, relation, response):
 
-    source_X, source_Y, window = get_info()
+    source_X, source_Y, window = get_info(pred, relation, response)
     
     #get data
     data, trials = get_data()
@@ -185,13 +186,4 @@ def data():
     return(split_data(data, window, trials, source_Y, source_X))
 
 
-
-
-
-
-
-
-if __name__ == "__main__":
-
-   data()
 
