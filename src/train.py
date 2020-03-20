@@ -20,12 +20,16 @@ if __name__ == "__main__":
     valid_X, valid_Y = valid
     test_X, test_Y = test
 
+    #Read the parameters of the model
+    with open("parameters.json", "r") as param_file:
+        parameters = json.load(param_file)
+
     #Parameters of model
-    training_epochs = 200
-    batch_size = 512
-    layers = 1
-    units = 3
-    learning_rate = 0.005
+    training_epochs = parameters["training_epochs"]
+    batch_size = parameters["batch_size"]
+    layers = parameters["layers"]
+    units = parameters["units"]
+    learning_rate = parameters["learning_rate"]
     
 
     reduce_lr = ReduceLROnPlateau(monitor='val_loss', factor=0.1,
@@ -59,7 +63,7 @@ if __name__ == "__main__":
 
     #Compute Correlation coefficient 
     corr = compute_correlation(predictions, test_Y)
-    print("The value of correlation is for electrode {} is {}", format(pred, corr))
+    print("The value of correlation is for electrode {} is {}". format(pred, corr))
 
 
     #Dump the values in json file
