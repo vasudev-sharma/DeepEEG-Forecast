@@ -41,8 +41,8 @@ if __name__ == "__main__":
     adam = optimizers.Adam(lr = learning_rate)
     rmsprop = optimizers.RMSprop(lr = learning_rate)
 
-    model = get_model()["CNN"]
-    model = model(train_X.shape, layers, train_Y.shape[-1])
+    model = get_model()["LR"]
+    model = model(train_X.shape)
 
     #Compile the model4
     model.compile(loss = 'mse', optimizer = sgd, metrics= ['mse'], )
