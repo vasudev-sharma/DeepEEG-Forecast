@@ -37,7 +37,7 @@ def conv_1D(dim, layers, source_Y):
     X= BatchNormalization()(X)
     X = ELU()(X)
     X= Dropout(0.1)(X)
-    #X = MaxPooling1D(pool_size= 2)(X)
+    X = MaxPooling1D(pool_size= 2)(X)
 
 
     X = Conv1D(filters = 40, kernel_size = 3)(X)

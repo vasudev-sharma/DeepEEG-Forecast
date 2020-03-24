@@ -31,21 +31,22 @@ if __name__ == "__main__":
     units = parameters["units"]
     learning_rate = parameters["learning_rate"]
     
-
+    '''
     reduce_lr = ReduceLROnPlateau(monitor='val_loss', factor=0.1,
                               patience=10, min_lr=0.00001)
-    
+    '''
 
     #Set up the Optimizers
     sgd = optimizers.SGD(lr = learning_rate)
     adam = optimizers.Adam(lr = learning_rate)
     rmsprop = optimizers.RMSprop(lr = learning_rate)
 
-    model = get_model()["LR"]
-    model = model(train_X.shape)
+    model = get_model()["CNN"]
+    model = model(train_X.shape, layers, train_Y.shape[-1])
+
 
     #Compile the model4
-    model.compile(loss = 'mse', optimizer = sgd, metrics= ['mse'], )
+    model.compile(loss = 'mse', optimizer = sgd, metrics= ['mse'])
 
     print(model.summary())
 
@@ -59,7 +60,7 @@ if __name__ == "__main__":
         verbose = 1,
         )
     #Predict the Y values for the given test set
-    predictions = model.predict(test_X, verbose = 1,  callbacks=[reduce_lr])
+    predictions = model.predict(test_X, verbose = 1)
 
     #Compute Correlation coefficient 
     corr = compute_correlation(predictions, test_Y)

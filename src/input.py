@@ -114,10 +114,10 @@ def extract_X (data,  window, source, batch_trials):                     #creati
 
     x = np.hstack(x)
    
-    '''
+    
     x = np.array(np.split(x, len(source), axis = -1))
     x = np.moveaxis(x, 0, -1)
-    '''
+    
     return x
 
 

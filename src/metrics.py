@@ -13,4 +13,5 @@ def list_correlation(electi, true, pred):
     l = []
     for i in range(len(electi)):
         l.append(compute_correlation(true[:, i], pred[:, i]))
+    return l
 
