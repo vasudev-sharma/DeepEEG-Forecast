@@ -1,5 +1,5 @@
 #!/bin/bash
-git checkout b1
+git checkout CNN
 pip install virtualenv
 virtualenv eeg_test --python=3.6
 source eeg_test/bin/activate
