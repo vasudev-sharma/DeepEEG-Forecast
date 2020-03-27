@@ -2,6 +2,7 @@ import os
 import json
 from keras import optimizers
 from input import data
+from predict import predict_single_timestep
 from models import get_model
 from metrics import compute_correlation
 from keras.callbacks import ReduceLROnPlateau
@@ -59,8 +60,10 @@ if __name__ == "__main__":
         validation_data = (valid_X, valid_Y), 
         verbose = 1,
         )
+
+    
     #Predict the Y values for the given test set
-    predictions = model.predict(test_X, verbose = 1)
+    predictions = predict_single_timestep(model, test_X)
 
     #Compute Correlation coefficient 
     corr = compute_correlation(predictions, test_Y)

@@ -1,5 +1,5 @@
 {
-    "training_epochs":200,
+    "training_epochs":1,
     "batch_size" : 256,
     "layers" : 1,
     "units" : 3,
