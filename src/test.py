@@ -1,7 +1,18 @@
-from input import get_data
-from utils import show_data
-
+#%%
+import numpy as np
+import matplotlib.pyplot as plt
 if __name__ == "__main__":
-    data, _ = get_data()
-    show_data(data, 64, 0)    
+   
  
+    print("hello")
+    time = np.arange(0, 1, 1/ 160)
+    x = np.random.rand(160)
+    plt.plot(time, x)
+    plt.show()
+ 
+
+
+# %%
+
+
+# %%

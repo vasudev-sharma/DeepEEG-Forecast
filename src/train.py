@@ -5,8 +5,9 @@ from input import data
 from keras.models import load_model
 from predict import predict_single_timestep, predict_multi_timestep
 from models import get_model
-from metrics import compute_correlation
+from metrics import compute_correlation, list_correlation
 from keras.callbacks import ReduceLROnPlateau
+from utils import plot_multistep_prediction
 
 pred = os.environ["pred"]
 
@@ -78,12 +79,32 @@ if __name__ == "__main__":
     #Predict the Y values for the given test set
     predictions = predict_multi_timestep(model, test_X, horizon = 160)
 
+    plot_multistep_prediction(test_Y, predictions)
+
+    #Actual and Predicted values for Single electrode mutistep 
+    true = test_Y[:, :, 63]
+    pred = predictions[:, :, 63]
+
+    corr = list_correlation(true, pred)
+    print("The value of correlation is for electrode 63 is {}". format(corr))
+
+
+    '''
+
     #Compute Correlation coefficient 
     corr = compute_correlation(predictions, test_Y)
     print("The value of correlation is for electrode {} is {}". format(pred, corr))
 
+    '''
 
+    
+
+
+
+    '''
+    Not working
     #Dump the values in json file
     data= {"Electrode_"+pred:corr}
     with open("corr_dat.json", "a") as write_file:
         json.dump(data, write_file)
+    '''

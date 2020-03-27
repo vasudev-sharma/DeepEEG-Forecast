@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 from keras.callbacks import TensorBoard
 import tensorflow as tf 
 from keras import backend as K
+from metrics import compute_correlation
 import os 
 
 def rolling_window(a, window):
@@ -90,20 +91,26 @@ def plot_weights(weights, electi, window):
     
 
 def plot_multistep_prediction(true, pred):
+    
     '''
-    Plot multistep prediction after Horizon timesteps 
-    :pr
+    Plot multistep prediction after n horizon timesteps for all channels
+    :pram true: Actual value that is test_Y            (Batch_size, Horizon, n_channels)
+    :param pred: Predicted value in a recursive manner (Batch_size, Horizon, n_channels)
     '''
+
+    time = np.arange(0, 1, 1 / 160)
     for j in range(64):
         true_elec = true[:, :, j]
-        pred_elec = predictions[:, :, j]
-
+        pred_elec = pred[:, :, j]
         l = []
         for i in range(160):
             l.append(compute_correlation(true_elec[:,i], pred_elec[:, i]))
         name = "Channel_{}".format(j+1)
+        plt.xlabel('time points')
+        plt.ylabel('r value')
         plt.plot(time, np.array(l), label = name)
         plt.legend(loc="upper right")
-        plt.show()
-        plt.savefig("images/"+name+".png")
+        plt.savefig("../images/"+name+".png")
+        plt.figure()
+    
     

@@ -9,9 +9,10 @@ def compute_correlation(true, pred):
     return corr_coef 
     
     
-def list_correlation(electi, true, pred):
+def list_correlation(true, pred):
     l = []
-    for i in range(len(electi)):
+    time_points = true.shape[-1]
+    for i in range(time_points):
         l.append(compute_correlation(true[:, i], pred[:, i]))
     return l
 
