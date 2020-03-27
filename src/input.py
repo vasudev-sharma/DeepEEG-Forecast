@@ -33,7 +33,7 @@ def get_data():
 def extract_Y (data, window, source, batch_trials, horizon = 1, multivariate = False):              #creation of a function to recover y - simplification of reading
    
 
-    time_points = data.shape[-1]
+
     print(horizon, multivariate)
 
     y = []
@@ -117,13 +117,13 @@ def split_data(data, window, trials, source_Y, source_X, horizon, split):
     print ("y_test.shape = ", y_test.shape)
 
     #Extract X
-    x_train = extract_X (data, window, source_X, trials_train,  horizon  = 1,   split = True)
+    x_train = extract_X (data, window, source_X, trials_train,  horizon  = 1,   split = split)
     print ("x_train.shape = ", x_train.shape)
 
-    x_valid = extract_X (data, window, source_X, trials_valid, horizon = 1 , split = True)
+    x_valid = extract_X (data, window, source_X, trials_valid, horizon = 1 , split = split)
     print ("x_valid.shape = ", x_valid.shape)
 
-    x_test = extract_X (data, window, source_X, trials_test, horizon = 160, split = True)
+    x_test = extract_X (data, window, source_X, trials_test, horizon = 160, split = split)
     print ("x_test.shape = ", x_test.shape)
 
 

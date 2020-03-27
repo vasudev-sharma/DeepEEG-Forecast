@@ -9,6 +9,7 @@ def predict_single_timestep(model, input):
 
 
 def predict_multi_timestep(model, input, horizon):
+    
     """
     Perform recursive prediction by feeding the network input at time t+1 with the prediction at
     time t. This is repeted 'horizon' number of time.
@@ -20,21 +21,29 @@ def predict_multi_timestep(model, input, horizon):
     :return: np.array
         (batch_size, horizon)
     """
-    input_seq = input                                         # (batch_size, n_timestamps, n_features)
-    output_seq = np.zeros((input_seq.shape[0], horizon, input_seq.shape[-1] ))  # (batch_size, horizon, n_features)
-    for i in tqdm(range(horizon)):
+
+    input_seq = input                                         # (batch_size, n_timestamps, n_features) and (batch_size, n_features * window)
+
+    output_seq = np.zeros((input_seq.shape[0], horizon, 64 ))  # (batch_size, horizon, n_features)
     
-        output = predict_single_timestep(model, input_seq)             # [batch_size, n_features]
-        print(output.shape)
+    for i in tqdm(range(horizon)):
+        input_seq = input_seq.reshape(input_seq.shape[0], -1)        #Reshape again so that input is (Batch_size, n_features * window)
+        output = predict_single_timestep(model, input_seq)             # [batch_size, n_features] 
+       # output = output.reshape(output.shape[0], 1, -1)
+        print("Input is -", input_seq.shape)
+        print("Output is -",output.shape)
+        input_seq = input_seq.reshape(input_seq.shape[0], 160, -1 )         #Reshape the size to (Batch_size, horizon, n_features)
         input_seq[:, :-1, :] = input_seq[:, 1:, :]                    
-        print(input_seq.shape)
-        print(output_seq.shape)
+        print("Input is -",input_seq.shape)
+    
         input_seq[:, -1, :] = output
 
         '''if exogenous is not None:
             input_seq[:, -1, 1:] = exogenous[:, i, :]
         '''
         # input_seq = np.concatenate([input_seq[:, 1:, :], np.expand_dims(output,axis=-1)], axis=1)
+        print("Shape of Output Sequence is ", output_seq.shape)
+        print("Shape of output is", output.shape)
         output_seq[:, i, :] = output
     return output_seq
 

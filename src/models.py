@@ -9,10 +9,11 @@ from keras import initializers
 def linear_regression(dim):
 
     _, features = dim 
-
+    out_features = features / 160
     inp = Input((features,))
+
     X = inp
-    out = Dense(1, activation = "linear", kernel_initializer = "normal" )(X)
+    out = Dense(out_features, activation = "linear", kernel_initializer = "normal" )(X)
     model = Model(inputs = inp , output = out)
     return model 
 
@@ -65,7 +66,6 @@ def vanilla_RNN(dim, layers, units, source_Y):
       X = SimpleRNN(units, return_sequences = True)(X)
     X = SimpleRNN(units)(X)
     out = Dense(source_Y, activation = "linear", kernel_initializer = 'normal')(X)
-    #out = Lambda(lambda x: x * 2)(X)
     
     model = Model(inputs = inp, outputs = out)
     return model

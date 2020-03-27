@@ -88,3 +88,22 @@ def plot_weights(weights, electi, window):
     plt.legend()    
     plt.show()
     
+
+def plot_multistep_prediction(true, pred):
+    '''
+    Plot multistep prediction after Horizon timesteps 
+    :pr
+    '''
+    for j in range(64):
+        true_elec = true[:, :, j]
+        pred_elec = predictions[:, :, j]
+
+        l = []
+        for i in range(160):
+            l.append(compute_correlation(true_elec[:,i], pred_elec[:, i]))
+        name = "Channel_{}".format(j+1)
+        plt.plot(time, np.array(l), label = name)
+        plt.legend(loc="upper right")
+        plt.show()
+        plt.savefig("images/"+name+".png")
+    
