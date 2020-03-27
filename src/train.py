@@ -22,7 +22,7 @@ if __name__ == "__main__":
     test_X, test_Y = test
 
     #Read the parameters of the model
-    with open("parameters.json", "r") as param_file:
+    with open("../config/CNN/parameters.json", "r") as param_file:
         parameters = json.load(param_file)
 
     #Parameters of model

@@ -1,8 +1,8 @@
 {
-    "training_epochs":1,
+    "training_epochs":30,
     "batch_size" : 256,
     "layers" : 1,
     "units" : 3,
-    "learning_rate" : 0.01 
+    "learning_rate" : 0.1 
     
 }
