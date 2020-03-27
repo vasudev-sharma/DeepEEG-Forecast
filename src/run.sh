@@ -1,4 +1,4 @@
-for i in `seq 1 30`;
+for i in -1;
 do 
    export pred=$i
     python -m train

@@ -30,24 +30,57 @@ def get_data():
 
 
 # extract Y for Muti Channel Prediction
-def extract_Y (data, window, source, batch_trials):              #creation of a function to recover y - simplification of reading
+def extract_Y (data, window, source, batch_trials, horizon = 1, multivariate = False):              #creation of a function to recover y - simplification of reading
    
 
     time_points = data.shape[-1]
+    print(horizon, multivariate)
 
     y = []
-    for i in source:
-        y_tmp=data[i, batch_trials, window:]     #recovery of Y in the form of a matrix of 154 * 840
-        y_tmp=np.reshape(y_tmp, ((time_points-window)*len(batch_trials)))    #passage through the list of 129 360 values ​​(test 0, test 1, ... test 153)
-        y_tmp=np.matrix(y_tmp)                           #1 * 129360 matrix conversion
-        y_tmp=np.transpose(y_tmp)                        #transposition into a matrix of 129360 * 1, matrix equal to that of Matlab (necessary for the rest)
-        y.append(y_tmp)
-    return(np.hstack(y)) 
+    for idx, i in enumerate(source):
+
+      y_tmp = []
+      for j in batch_trials:
+        tmp = rolling_window(data[i, j,window:], horizon)
+        y_tmp.append(tmp)
+      y.append(np.vstack(y_tmp))
+
+    if multivariate:
+      y= np.moveaxis(np.array(y), 0, -1)      
+    else: 
+      y = np.hstack(y) 
+    return(y) 
                                         #returns the content of y_tmp
 
 
 
-def split_data(data, window, trials, source_Y, source_X):
+
+
+def extract_X (data,  window, source, batch_trials, horizon = 1, split = True):                     #creation of a function to recover x - simplification of reading
+   
+
+    time_points = data.shape[-1]
+    x = np.zeros((len(source),  len(batch_trials) * (time_points - window  - horizon + 1), window)) 
+
+    for idx, i in enumerate(source):                                      #reading the source list -> reading each electrode number if flip
+      x_tmp = []
+      for j in batch_trials:
+        tmp = rolling_window(data[i, j, : -horizon], window)
+        x_tmp.append(tmp)
+      x[idx] = np.vstack(x_tmp)
+
+    x = np.hstack(x)
+   
+    if split:
+        x = np.array(np.split(x, len(source), axis = -1))
+        x = np.moveaxis(x, 0, -1)
+    
+    return x
+
+
+
+
+def split_data(data, window, trials, source_Y, source_X, horizon, split):
 
     #Split the trials
     #trials_train, trials_valid, trials_test = split_trials(trials)
@@ -74,51 +107,28 @@ def split_data(data, window, trials, source_Y, source_X):
         
 
     #Extract Y
-    y_train = extract_Y (data, window,  source_Y, trials_train)
+    y_train = extract_Y (data, window,  source_Y, trials_train, horizon = 1, multivariate = False)
     print ("y_train.shape = ", y_train.shape)
 
-    y_valid = extract_Y (data, window, source_Y, trials_valid)
+    y_valid = extract_Y (data, window, source_Y, trials_valid, horizon  = 1, multivariate= False)
     print ("y_valid.shape = ", y_valid.shape)
 
-    y_test = extract_Y (data, window, source_Y, trials_test)
+    y_test = extract_Y (data, window, source_Y, trials_test, horizon = 160, multivariate= True)
     print ("y_test.shape = ", y_test.shape)
 
     #Extract X
-    x_train = extract_X (data, window, source_X, trials_train)
+    x_train = extract_X (data, window, source_X, trials_train,  horizon  = 1,   split = True)
     print ("x_train.shape = ", x_train.shape)
 
-    x_valid = extract_X (data, window, source_X, trials_valid)
+    x_valid = extract_X (data, window, source_X, trials_valid, horizon = 1 , split = True)
     print ("x_valid.shape = ", x_valid.shape)
 
-    x_test = extract_X (data, window, source_X, trials_test)
+    x_test = extract_X (data, window, source_X, trials_test, horizon = 160, split = True)
     print ("x_test.shape = ", x_test.shape)
 
 
 
     return ((x_train, y_train), (x_valid, y_valid), (x_test, y_test))
-
-
-
-def extract_X (data,  window, source, batch_trials):                     #creation of a function to recover x - simplification of reading
-   
-
-    time_points = data.shape[-1]
-    x = np.zeros((len(source),  len(batch_trials) * (time_points - window), window)) 
-
-    for idx, i in enumerate(source):                                      #reading the source list -> reading each electrode number if flip
-      x_tmp = []
-      for j in batch_trials:
-        tmp = rolling_window(data[i, j, :-1], window)
-        x_tmp.append(tmp)
-      x[idx] = np.vstack(x_tmp)
-
-    x = np.hstack(x)
-   
-    
-    x = np.array(np.split(x, len(source), axis = -1))
-    x = np.moveaxis(x, 0, -1)
-    
-    return x
 
 
 
@@ -145,7 +155,7 @@ def get_info(pred, relation, response):
 
     #n_channel = input('Enter  the chanel number for which you want your predicion: ')
 
-    n_channel = [pred]
+    n_channel = electi
     print("The value of channel to be predicted is ", n_channel)
 
 
@@ -161,7 +171,7 @@ def get_info(pred, relation, response):
             source_X = [0] + electi[0]
 
     elif relation == '2':
-        format_1 = np.flip(format_1,2)     # data inversion according to the time dimension - problem ????
+        #format_1 = np.flip(format_1,2)     # data inversion according to the time dimension - problem ????
         source_Y = 0
         source_X = electi
         
@@ -176,14 +186,14 @@ def get_info(pred, relation, response):
 
     return source_X, source_Y, window
 
-def data(pred, relation, response):
+def data(pred, relation, response,  horizon,  split):
 
     source_X, source_Y, window = get_info(pred, relation, response)
     
     #get data
     data, trials = get_data()
 
-    return(split_data(data, window, trials, source_Y, source_X))
+    return(split_data(data, window, trials, source_Y, source_X, horizon, split))
 
 
 

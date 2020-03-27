@@ -2,7 +2,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 from keras.callbacks import TensorBoard
 import tensorflow as tf 
-import keras as K
+from keras import backend as K
+import os 
 
 def rolling_window(a, window):
     shape = a.shape[:-1] + (a.shape[-1] - window + 1, window)
@@ -17,7 +18,9 @@ def show_data(data,channel, trial):
   Time = np.linspace(0, 6.25, 1000)
   for i in range(channel):
     plt.plot(Time, data[i][trial])
+    plt.savefig('1.png')
     plt.figure()
+
 
 
 class TrainValTensorBoard(TensorBoard):

@@ -2,7 +2,8 @@ import os
 import json
 from keras import optimizers
 from input import data
-from predict import predict_single_timestep
+from keras.models import load_model
+from predict import predict_single_timestep, predict_multi_timestep
 from models import get_model
 from metrics import compute_correlation
 from keras.callbacks import ReduceLROnPlateau
@@ -12,10 +13,14 @@ pred = os.environ["pred"]
 
 if __name__ == "__main__":
     
-    
+    # Set the Training parameter to False to True whether you want training 
+    training = False
+
+    #No of predictions steps ahead
+    horizon = 160
 
     print("The predicted value is ", pred)
-    train, valid, test = data(int(pred), "3", "2")
+    train, valid, test = data(int(pred), relation= "3", response= "2", horizon = horizon,  split = False )
 
     train_X, train_Y = train
     valid_X, valid_Y = valid
@@ -31,6 +36,7 @@ if __name__ == "__main__":
     layers = parameters["layers"]
     units = parameters["units"]
     learning_rate = parameters["learning_rate"]
+
     
     '''
     reduce_lr = ReduceLROnPlateau(monitor='val_loss', factor=0.1,
@@ -41,29 +47,36 @@ if __name__ == "__main__":
     sgd = optimizers.SGD(lr = learning_rate)
     adam = optimizers.Adam(lr = learning_rate)
     rmsprop = optimizers.RMSprop(lr = learning_rate)
+    print(train)
 
-    model = get_model()["CNN"]
-    model = model(train_X.shape, layers, train_Y.shape[-1])
+    if training: 
+        
+        model = get_model()["CNN"]
+        model = model(train_X.shape, layers, train_Y.shape[-1])
 
 
-    #Compile the model4
-    model.compile(loss = 'mse', optimizer = sgd, metrics= ['mse'])
+        #Compile the model4
+        model.compile(loss = 'mse', optimizer = sgd, metrics= ['mse'])
 
-    print(model.summary())
+        print(model.summary())
 
-    # Fit the model with the Data
-    history = model.fit(
-        train_X, 
-        train_Y, 
-        batch_size = batch_size,
-        epochs = training_epochs, 
-        validation_data = (valid_X, valid_Y), 
-        verbose = 1,
-        )
+        # Fit the model with the Data
+        history = model.fit(
+            train_X, 
+            train_Y, 
+            batch_size = batch_size,
+            epochs = training_epochs, 
+            validation_data = (valid_X, valid_Y), 
+            verbose = 1,
+            )
+
+    else: 
+        model = load_model('../models/LR/LR_3_2_all_channels.h5')
+        print(model.summary())
 
     
     #Predict the Y values for the given test set
-    predictions = predict_single_timestep(model, test_X)
+    predictions = predict_multi_timestep(model, test_X, horizon = 160)
 
     #Compute Correlation coefficient 
     corr = compute_correlation(predictions, test_Y)
