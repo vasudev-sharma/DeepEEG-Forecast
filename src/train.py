@@ -1,13 +1,14 @@
 import os
 import json
-from keras import optimizers
+from tensorflow.keras import optimizers
 from input import data
-from keras.models import load_model
+from tensorflow.keras.models import load_model
 from predict import predict_single_timestep, predict_multi_timestep
 from models import get_model
 from metrics import compute_correlation, list_correlation
-from keras.callbacks import ReduceLROnPlateau
+from tensorflow.keras.callbacks import ReduceLROnPlateau
 from utils import plot_multistep_prediction
+from numpy import savez_compressed
 
 pred = os.environ["pred"]
 
@@ -21,7 +22,7 @@ if __name__ == "__main__":
     horizon = 160
 
     print("The predicted value is ", pred)
-    train, valid, test = data(int(pred), relation= "3", response= "2", horizon = horizon,  split = False )
+    train, valid, test = data(int(pred), relation= "3", response= "2", horizon = horizon,  split = True )
 
     train_X, train_Y = train
     valid_X, valid_Y = valid
@@ -72,14 +73,15 @@ if __name__ == "__main__":
             )
 
     else: 
-        model = load_model('../models/LR/LR_3_2_all_channels.h5')
+
+        model = load_model('../models/LSTM/model_LSTM_all_channel.h5')
         print(model.summary())
 
     
     #Predict the Y values for the given test set
-    predictions = predict_multi_timestep(model, test_X, horizon = 160)
+    predictions = predict_multi_timestep(model, test_X, horizon = horizon, LR = False )
 
-    plot_multistep_prediction(test_Y, predictions)
+    plot_multistep_prediction(test_Y, predictions )
 
     #Actual and Predicted values for Single electrode mutistep 
     true = test_Y[:, :, 63]
@@ -87,6 +89,12 @@ if __name__ == "__main__":
 
     corr = list_correlation(true, pred)
     print("The value of correlation is for electrode 63 is {}". format(corr))
+
+
+    '''Save the predicted and True values in the numpy array'''
+    savez_compressed('/root/EEG/models/LSTM/True.npz', test_Y)
+    savez_compressed('/root/EEG/models/LSTM/predicted.npz', predictions)
+
 
 
     '''

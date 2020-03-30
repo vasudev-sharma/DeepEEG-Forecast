@@ -1,8 +1,8 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from keras.callbacks import TensorBoard
+from tensorflow.keras.callbacks import TensorBoard
 import tensorflow as tf 
-from keras import backend as K
+from tensorflow import keras as K
 from metrics import compute_correlation
 import os 
 
@@ -98,19 +98,73 @@ def plot_multistep_prediction(true, pred):
     :param pred: Predicted value in a recursive manner (Batch_size, Horizon, n_channels)
     '''
 
+    ch_names = ['Stimulu','Fp1',   'AF7','AF3', 'F1','TP9','F5h','F7','FT7','FC5h','PO9','FC1','C1','C3',
+    'C5','T7','TP7','CP5','CP3','CP1','P1','I1','P5h','P7','P9','PO7','PO3','O1','Iz','Oz','POz','Pz','CPz','Fpz','Fp2','AF8',
+     'AF4','AFz','Fz','F2','TP10','F6h','F8','FT8','FC6h','PO10','FC2','FCz','Cz','C2','C4','C6','T8','TP8','CP6','CP4','CP2','P2',
+     'I2','P6h','P8',
+     'P10', 'PO8','PO4','O2']
+
     time = np.arange(0, 1, 1 / 160)
-    for j in range(64):
+    for j in range(true.shape[-1]):
         true_elec = true[:, :, j]
         pred_elec = pred[:, :, j]
+
         l = []
         for i in range(160):
             l.append(compute_correlation(true_elec[:,i], pred_elec[:, i]))
-        name = "Channel_{}".format(j+1)
+
+        name = "Channel_{}:-{}".format(j+1, ch_names[j+1])
         plt.xlabel('time points')
         plt.ylabel('r value')
+
         plt.plot(time, np.array(l), label = name)
+
         plt.legend(loc="upper right")
         plt.savefig("../images/"+name+".png")
         plt.figure()
+    
+
+
+
+def compare_plot_multistep_prediction(true, pred, true1, pred1):
+    
+    '''
+    Plot multistep prediction after n horizon timesteps for all channels
+    :pram true: Actual value that is test_Y            (Batch_size, Horizon, n_channels)
+    :param pred: Predicted value in a recursive manner (Batch_size, Horizon, n_channels)
+    '''
+
+    ch_names = ['Stimulu','Fp1',   'AF7','AF3', 'F1','TP9','F5h','F7','FT7','FC5h','PO9','FC1','C1','C3',
+    'C5','T7','TP7','CP5','CP3','CP1','P1','I1','P5h','P7','P9','PO7','PO3','O1','Iz','Oz','POz','Pz','CPz','Fpz','Fp2','AF8',
+     'AF4','AFz','Fz','F2','TP10','F6h','F8','FT8','FC6h','PO10','FC2','FCz','Cz','C2','C4','C6','T8','TP8','CP6','CP4','CP2','P2',
+     'I2','P6h','P8',
+     'P10', 'PO8','PO4','O2']
+
+    time = np.arange(0, 1, 1 / 160)
+    for j in range(true.shape[-1]):
+        true_elec = true[:, :, j]
+        pred_elec = pred[:, :, j]
+
+        true_elec1 = true1[:, :, j]
+        pred_elec1 = pred1[:, :, j]
+
+
+        l = []
+        k = []
+        for i in range(160):
+            l.append(compute_correlation(true_elec[:,i], pred_elec[:, i]))
+            k.append(compute_correlation(true_elec1[:,i], pred_elec1[:, i]))
+
+        name = "Channel_{}:-{}".format(j+1, ch_names[j+1])
+        plt.xlabel('time points')
+        plt.ylabel('r value')
+
+        plt.plot(time, np.array(l), label = name)
+        plt.plot(time, np.array(k), label = name)
+
+        plt.legend(loc="upper right")
+        plt.savefig("../images/"+name+".png")
+        plt.figure()
+    
     
     
