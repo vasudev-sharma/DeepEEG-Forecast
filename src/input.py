@@ -25,6 +25,7 @@ def get_data():
 
   #Z score
   format_1=stats.zscore(format_1, axis=2)
+  format_1 = format_1[:, :, 160:]
   return format_1, trials
 
 
@@ -37,7 +38,7 @@ def extract_Y (data, window, source, batch_trials, horizon = 1, multivariate = F
     print(horizon, multivariate)
 
     y = []
-    for idx, i in enumerate(source):
+    for i in source:
 
       y_tmp = []
       for j in batch_trials:

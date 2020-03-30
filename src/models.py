@@ -19,7 +19,7 @@ def linear_regression(dim):
 
 
 #COnvolutional Neural Network
-def conv_1D(dim, layers, source_Y):
+def conv_1D(dim, source_Y):
 
     _, window, features = dim
 
@@ -57,13 +57,12 @@ def conv_1D(dim, layers, source_Y):
 
 
 #RNN
-def vanilla_RNN(dim, layers, units, source_Y):
+def vanilla_RNN(dim,  units, source_Y):
 
     _, window, features = dim
     inp = Input([window, features])
     X = inp
-    for _ in range(layers - 1):
-      X = SimpleRNN(units, return_sequences = True)(X)
+ 
     X = SimpleRNN(units)(X)
     out = Dense(source_Y, activation = "linear", kernel_initializer = 'normal')(X)
     
@@ -73,13 +72,12 @@ def vanilla_RNN(dim, layers, units, source_Y):
 
 
 #RNN
-def vanilla_LSTM(dim, layers, units, source_Y):
+def vanilla_LSTM(dim,  units, source_Y):
 
     _, window, features = dim
     inp = Input([window, features])
     X = inp
-    for _ in range(layers - 1):
-      X = LSTM(units, return_sequences = True)(X)
+    
     X = LSTM(units)(X)
     out = Dense(source_Y, activation = "linear", kernel_initializer = 'normal')(X)
     #out = Lambda(lambda x: x * 2)(X)

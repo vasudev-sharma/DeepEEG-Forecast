@@ -6,7 +6,8 @@ def predict_single_timestep(model, input):
     output = model.predict(input, verbose = 1)
     return output
 
-def predict_multi_timestep(model, input, horizon = 160, LR  = False):
+
+def predict_multi_timestep(model, input, horizon = 160, model_name = "LR"):
     
     """
     Perform recursive prediction by feeding the network input at time t+1 with the prediction at
@@ -22,8 +23,8 @@ def predict_multi_timestep(model, input, horizon = 160, LR  = False):
 
     input_seq = input                                         # (batch_size, n_timestamps, n_features) and (batch_size, n_features * window)
 
-    if LR: 
-        output_seq = np.zeros((input_seq.shape[0], horizon, 64 ))  # (batch_size, horizon, n_features)
+    if model_name == 'LR': 
+        output_seq = np.zeros((input_seq.shape[0], horizon, train_seq.shape[-1] / 160 ))  # (batch_size, horizon, n_features)
     else: 
         output_seq = np.zeros((input_seq.shape[0], horizon, input_seq.shape[-1]))
 
@@ -44,9 +45,8 @@ def predict_multi_timestep(model, input, horizon = 160, LR  = False):
 
         output_seq[:, i, :] = output
 
-        if LR: 
+        if model_name == 'LR':
             input_seq = input_seq.reshape(input_seq.shape[0], -1)        #Reshape again so that input is (Batch_size, n_features)
 
-      
-
+    
     return output_seq

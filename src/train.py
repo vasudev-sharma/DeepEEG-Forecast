@@ -16,7 +16,8 @@ pred = os.environ["pred"]
 if __name__ == "__main__":
     
     # Set the Training parameter to False to True whether you want training 
-    training = False
+    training = True
+    model_name = "LSTM"
 
     #No of predictions steps ahead
     horizon = 160
@@ -29,7 +30,7 @@ if __name__ == "__main__":
     test_X, test_Y = test
 
     #Read the parameters of the model
-    with open("../config/CNN/parameters.json", "r") as param_file:
+    with open("../config/{}/parameters.json".format(model_name), "r") as param_file:
         parameters = json.load(param_file)
 
     #Parameters of model
@@ -53,8 +54,8 @@ if __name__ == "__main__":
 
     if training: 
         
-        model = get_model()["CNN"]
-        model = model(train_X.shape, layers, train_Y.shape[-1])
+        model = get_model()[model_name]
+        model = model(train_X.shape, units,  train_Y.shape[-1])
 
 
         #Compile the model4
@@ -72,6 +73,8 @@ if __name__ == "__main__":
             verbose = 1,
             )
 
+        model.save('../models/LSTM/LSTM.h5')
+
     else: 
 
         model = load_model('../models/LSTM/model_LSTM_all_channel.h5')
@@ -79,7 +82,7 @@ if __name__ == "__main__":
 
     
     #Predict the Y values for the given test set
-    predictions = predict_multi_timestep(model, test_X, horizon = horizon, LR = False )
+    predictions = predict_multi_timestep(model, test_X, horizon = horizon, model_name = model_name)
 
     plot_multistep_prediction(test_Y, predictions )
 
