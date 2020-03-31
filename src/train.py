@@ -16,43 +16,44 @@ pred = os.environ["pred"]
 if __name__ == "__main__":
     
     # Set the Training parameter to False to True whether you want training 
-    training = True
-    model_name = "LSTM"
+    training = False
+    model_name = "LR"
 
     #No of predictions steps ahead
     horizon = 160
 
     print("The predicted value is ", pred)
-    train, valid, test = data(int(pred), relation= "3", response= "2", horizon = horizon,  split = True )
+    train, valid, test = data(int(pred), relation= "3", response= "2", horizon = horizon,  split = False , multivariate = True)
 
     train_X, train_Y = train
     valid_X, valid_Y = valid
     test_X, test_Y = test
 
-    #Read the parameters of the model
-    with open("../config/{}/parameters.json".format(model_name), "r") as param_file:
-        parameters = json.load(param_file)
-
-    #Parameters of model
-    training_epochs = parameters["training_epochs"]
-    batch_size = parameters["batch_size"]
-    layers = parameters["layers"]
-    units = parameters["units"]
-    learning_rate = parameters["learning_rate"]
-
     
-    '''
-    reduce_lr = ReduceLROnPlateau(monitor='val_loss', factor=0.1,
-                              patience=10, min_lr=0.00001)
-    '''
-
-    #Set up the Optimizers
-    sgd = optimizers.SGD(lr = learning_rate)
-    adam = optimizers.Adam(lr = learning_rate)
-    rmsprop = optimizers.RMSprop(lr = learning_rate)
-    print(train)
-
     if training: 
+
+        #Read the parameters of the model
+        with open("../config/{}/parameters.json".format(model_name), "r") as param_file:
+            parameters = json.load(param_file)
+
+        #Parameters of model
+        training_epochs = parameters["training_epochs"]
+        batch_size = parameters["batch_size"]
+        layers = parameters["layers"]
+        units = parameters["units"]
+        learning_rate = parameters["learning_rate"]
+
+        
+        '''
+        reduce_lr = ReduceLROnPlateau(monitor='val_loss', factor=0.1,
+                                patience=10, min_lr=0.00001)
+        '''
+
+        #Set up the Optimizers
+        sgd = optimizers.SGD(lr = learning_rate)
+        adam = optimizers.Adam(lr = learning_rate)
+        rmsprop = optimizers.RMSprop(lr = learning_rate)
+
         
         model = get_model()[model_name]
         model = model(train_X.shape, units,  train_Y.shape[-1])
@@ -77,14 +78,14 @@ if __name__ == "__main__":
 
     else: 
 
-        model = load_model('../models/LSTM/model_LSTM_all_channel.h5')
+        model = load_model('../models/{}/LR_3_2_all_channels.h5'.format(model_name))
         print(model.summary())
 
     
     #Predict the Y values for the given test set
     predictions = predict_multi_timestep(model, test_X, horizon = horizon, model_name = model_name)
 
-    plot_multistep_prediction(test_Y, predictions )
+    #plot_multistep_prediction(test_Y, predictions )
 
     #Actual and Predicted values for Single electrode mutistep 
     true = test_Y[:, :, 63]
@@ -95,8 +96,8 @@ if __name__ == "__main__":
 
 
     '''Save the predicted and True values in the numpy array'''
-    savez_compressed('/root/EEG/models/LSTM/True.npz', test_Y)
-    savez_compressed('/root/EEG/models/LSTM/predicted.npz', predictions)
+    savez_compressed('/root/EEG/models/{}/True.npz'.format(model_name), test_Y)
+    savez_compressed('/root/EEG/models/{}/predicted.npz'.format(model_name), predictions)
 
 
 

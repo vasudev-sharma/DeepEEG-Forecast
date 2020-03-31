@@ -1,5 +1,6 @@
 import numpy as np
 from tqdm import tqdm 
+from metrics import list_correlation
 
 def predict_single_timestep(model, input):
 
@@ -24,7 +25,7 @@ def predict_multi_timestep(model, input, horizon = 160, model_name = "LR"):
     input_seq = input                                         # (batch_size, n_timestamps, n_features) and (batch_size, n_features * window)
 
     if model_name == 'LR': 
-        output_seq = np.zeros((input_seq.shape[0], horizon, train_seq.shape[-1] / 160 ))  # (batch_size, horizon, n_features)
+        output_seq = np.zeros((input_seq.shape[0], horizon, int(input_seq.shape[-1] / 160) ))  # (batch_size, horizon, n_features)
     else: 
         output_seq = np.zeros((input_seq.shape[0], horizon, input_seq.shape[-1]))
 
@@ -50,3 +51,16 @@ def predict_multi_timestep(model, input, horizon = 160, model_name = "LR"):
 
     
     return output_seq
+
+
+def baseline(test_x, test_y):
+    horizon = 160 
+    l = []
+
+    for i in tqdm(range( horizon)):
+        l.append(np.array(list_correlation(test_x[:,-1, :], test_y[:, i, :])))
+    l = np.array(l)
+    np.savez_compressed('../models/baseline/baseline_all_channels.npz', l)
+    return l
+
+        

@@ -25,7 +25,7 @@ def get_data():
 
   #Z score
   format_1=stats.zscore(format_1, axis=2)
-  format_1 = format_1[:, :, 160:]
+  #format_1 = format_1[:, :, 160:]
   return format_1, trials
 
 
@@ -42,7 +42,9 @@ def extract_Y (data, window, source, batch_trials, horizon = 1, multivariate = F
 
       y_tmp = []
       for j in batch_trials:
-        tmp = rolling_window(data[i, j,window:], horizon)
+        tmp = rolling_window(data[i, j,window :], horizon)
+      
+
         y_tmp.append(tmp)
       y.append(np.vstack(y_tmp))
 
@@ -58,6 +60,10 @@ def extract_Y (data, window, source, batch_trials, horizon = 1, multivariate = F
 
 
 def extract_X (data,  window, source, batch_trials, horizon = 1, split = True):                     #creation of a function to recover x - simplification of reading
+    '''
+    :param split:- If modelling using LR set split to False, else set slit to True so that shape would be [Batch_Size, Window, Features]
+
+    '''
    
 
     time_points = data.shape[-1]
@@ -81,7 +87,7 @@ def extract_X (data,  window, source, batch_trials, horizon = 1, split = True): 
 
 
 
-def split_data(data, window, trials, source_Y, source_X, horizon, split):
+def split_data(data, window, trials, source_Y, source_X, horizon, split, multivariate):
 
     #Split the trials
     #trials_train, trials_valid, trials_test = split_trials(trials)
@@ -105,7 +111,6 @@ def split_data(data, window, trials, source_Y, source_X, horizon, split):
     trials_test = np.array([116,  57, 110,   7,  40, 176, 150,  41, 120, 135, 101,  71,  62,
             86, 129,  35, 104,   5,  17])
 
-        
 
     #Extract Y
     y_train = extract_Y (data, window,  source_Y, trials_train, horizon = 1, multivariate = False)
@@ -114,7 +119,7 @@ def split_data(data, window, trials, source_Y, source_X, horizon, split):
     y_valid = extract_Y (data, window, source_Y, trials_valid, horizon  = 1, multivariate= False)
     print ("y_valid.shape = ", y_valid.shape)
 
-    y_test = extract_Y (data, window, source_Y, trials_test, horizon = 160, multivariate= True)
+    y_test = extract_Y (data, window, source_Y, trials_test, horizon = horizon, multivariate= multivariate)
     print ("y_test.shape = ", y_test.shape)
 
     #Extract X
@@ -124,12 +129,12 @@ def split_data(data, window, trials, source_Y, source_X, horizon, split):
     x_valid = extract_X (data, window, source_X, trials_valid, horizon = 1 , split = split)
     print ("x_valid.shape = ", x_valid.shape)
 
-    x_test = extract_X (data, window, source_X, trials_test, horizon = 160, split = split)
+    x_test = extract_X (data, window, source_X, trials_test, horizon = horizon, split = split)
     print ("x_test.shape = ", x_test.shape)
 
+  
 
-
-    return ((x_train, y_train), (x_valid, y_valid), (x_test, y_test))
+    return (x_train, y_train), (x_valid, y_valid), (x_test, y_test)
 
 
 
@@ -187,14 +192,31 @@ def get_info(pred, relation, response):
 
     return source_X, source_Y, window
 
-def data(pred, relation, response,  horizon,  split):
+def data(pred, relation, response,  horizon,  split, multivariate):
+    
+    '''
+
+    param: pred - a integer parameter to predict the channel in the eeg experiment
+    param: relation - a string indicating which task to perform 1 --> Stiluli to EEG
+                                                                2 --> EEG to stimuli 
+                                                                3 --> EEG to EEG porecasting
+    param: response - string indicating ti whether include stimuli or not in the data 
+                                                                1 --> Include stimuli information
+                                                                2 --> Not include stimuli information
+    param: horizon - (int) number of time steps to predicted in the future
+    param: split   - (Boolean) Indicating  whether to use LR (False) or not (True - other models)
+    param: mutivariate -  (Boolean) indicating whether you want to split the data into features or not
+                                                                True --> Used for case for mutistep forecasting 
+                                                                False ---> Used for isingle step forecasting
+     '''                                            
+
 
     source_X, source_Y, window = get_info(pred, relation, response)
     
     #get data
     data, trials = get_data()
 
-    return(split_data(data, window, trials, source_Y, source_X, horizon, split))
+    return(split_data(data, window, trials, source_Y, source_X, horizon, split, multivariate))
 
 
 
