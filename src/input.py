@@ -150,7 +150,7 @@ def split_trials(trials):
   return trials_train, trials_valid, trials_test
 
  
-def get_info(pred, relation, response):
+def get_info(pred, relation, stimulus):
 
     electi = [i for i in range(1, 65) if i!=pred]
     #electi = list(map(int, eltmp.split()))    #separation of the different responses and recovery in the form of a list of integers
@@ -169,7 +169,7 @@ def get_info(pred, relation, response):
 
     if relation == '1':
         #response = input("Do you want to embed information of EEG as well ? ( 1 for yes or 2 for no)")
-        if response == "2":
+        if stimulus == "2":
             source_Y = electi   #retrieving the electrode number as a whole number - implies that there is only one electrode chosen in this direction
             source_X = [0]          #conversion of the stimuli line in the form of a list - necessary for the for loop: see below - extraction X
         else:
@@ -183,7 +183,7 @@ def get_info(pred, relation, response):
         
     elif relation == '3':
         #response = input("Do you want to embed information of Stimuli as well ? ( 1 for yes or 2 for no)") 
-        if response == "2":
+        if stimulus == "2":
             source_Y = n_channel
             source_X = electi
         else: 
@@ -192,7 +192,7 @@ def get_info(pred, relation, response):
 
     return source_X, source_Y, window
 
-def data(pred, relation, response,  horizon,  split, multivariate):
+def data(pred, relation, stimulus,  horizon,  split, multivariate):
     
     '''
 
@@ -200,7 +200,7 @@ def data(pred, relation, response,  horizon,  split, multivariate):
     param: relation - a string indicating which task to perform 1 --> Stiluli to EEG
                                                                 2 --> EEG to stimuli 
                                                                 3 --> EEG to EEG porecasting
-    param: response - string indicating ti whether include stimuli or not in the data 
+    param: stimulus - string indicating ti whether include stimuli or not in the data 
                                                                 1 --> Include stimuli information
                                                                 2 --> Not include stimuli information
     param: horizon - (int) number of time steps to predicted in the future
@@ -211,7 +211,7 @@ def data(pred, relation, response,  horizon,  split, multivariate):
      '''                                            
 
 
-    source_X, source_Y, window = get_info(pred, relation, response)
+    source_X, source_Y, window = get_info(pred, relation, stimulus)
     
     #get data
     data, trials = get_data()

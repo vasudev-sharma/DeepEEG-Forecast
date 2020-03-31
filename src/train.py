@@ -11,18 +11,20 @@ from utils import plot_multistep_prediction
 from numpy import savez_compressed
 
 pred = os.environ["pred"]
+stimulus = os.environ["stimulus"]
+relation = os.environ["relation"]
 
 
 if __name__ == "__main__":
     
     # Set the Training parameter to False to True whether you want training 
-    training = False
-    model_name = "LSTM"
+    training = True
+    model_name = "CNN"
 
     #No of predictions steps ahead
-    horizon = 160
+    horizon = 1
 
-    multivaritate = False
+    multivariate = False
     split = True
     if horizon > 1:
         multivariate = True
@@ -31,7 +33,7 @@ if __name__ == "__main__":
     
 
     print("The predicted value is ", pred)
-    train, valid, test = data(int(pred), relation= "3", response= "2", horizon = horizon,  split = split , multivariate = multivariate)
+    train, valid, test = data(int(pred), relation= relation, stimulus= stimulus, horizon = horizon,  split = split , multivariate = multivariate)
 
     train_X, train_Y = train
     valid_X, valid_Y = valid
@@ -64,7 +66,7 @@ if __name__ == "__main__":
 
         
         model = get_model()[model_name]
-        model = model(train_X.shape, units,  train_Y.shape[-1])
+        model = model(train_X.shape, train_Y.shape[-1])
 
 
         #Compile the model4
