@@ -129,8 +129,6 @@ def plot_multistep_prediction(true, pred):
 
     
 
-
-
 def compare_plot_multistep_prediction(true, pred, true1, pred1, baseline):
     
     '''
@@ -146,6 +144,9 @@ def compare_plot_multistep_prediction(true, pred, true1, pred1, baseline):
      'P10', 'PO8','PO4','O2']
 
     time = np.arange(0, 1, 1 / 160)
+    l_avg = []
+    k_avg = []
+    baseline_avg = []
     for j in range(true.shape[-1]):
         true_elec = true[:, :, j]
         pred_elec = pred[:, :, j]
@@ -169,20 +170,40 @@ def compare_plot_multistep_prediction(true, pred, true1, pred1, baseline):
         plt.plot(time, np.array(k), label = name+ ' LSTM Prediction')
         plt.plot(time, baseline_elec, label = name+ ' Baseline')
 
+        l_avg.append(np.array(l))
+        k_avg.append(np.array(k))
+        baseline_avg.append(baseline_elec)
+
+
         plt.legend(loc="upper right")
         plt.savefig("../images/"+name+".png")
         plt.figure()
     
+    plt.xlabel('time points')
+    plt.ylabel('r value ')
+    print(np.array(l_avg).shape)
+    print(np.array(k_avg).shape)
+    print(np.array(baseline_avg).shape)
+
+
+    plt.plot(time, np.array(l_avg).mean(axis = 0), label = ' LR Prediction')
+    plt.plot(time, np.array(k_avg).mean(axis = 0), label =' LSTM Prediction')
+    plt.plot(time, np.array(baseline_avg).mean(axis = 0), label =' Baseline')
+
+    plt.legend(loc="upper right")
+    plt.savefig("../images/"+"Average_over_64_channels"+".png")
+    plt.figure()
+
     
 
-
+'''
 def compare_plot_multistep_prediction(true, pred, true1, pred1):
     
-    '''
+    
     Plot multistep prediction after n horizon timesteps for all channels
     :pram true: Actual value that is test_Y            (Batch_size, Horizon, n_channels)
     :param pred: Predicted value in a recursive manner (Batch_size, Horizon, n_channels)
-    '''
+    
 
     ch_names = ['Stimulu','Fp1',   'AF7','AF3', 'F1','TP9','F5h','F7','FT7','FC5h','PO9','FC1','C1','C3',
     'C5','T7','TP7','CP5','CP3','CP1','P1','I1','P5h','P7','P9','PO7','PO3','O1','Iz','Oz','POz','Pz','CPz','Fpz','Fp2','AF8',
@@ -217,4 +238,4 @@ def compare_plot_multistep_prediction(true, pred, true1, pred1):
         plt.figure()
     
     
-    
+    '''

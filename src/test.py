@@ -2,6 +2,7 @@ from utils import plot_multistep_prediction, compare_plot_multistep_prediction
 from input import data
 from metrics import list_correlation
 from tqdm import tqdm
+from predict import baseline
 import numpy as np
 from numpy import savez_compressed
 import matplotlib.pyplot as plt
@@ -9,30 +10,15 @@ if __name__ == "__main__":
 
     '''
     pred = -1
-   
-    test_x, test_y = data(int(pred), relation= "3", response= "2", horizon = horizon,  split = True , multivariate = True)
-
-    
-
-    #np.savez_compressed('previous.npz', test_y)
-
-    #test1 = np.load('previous.npz')['arr_0']
-    #print(test1.shape)
-    
-    
-    def baseline():
-        horizon = 160 
-        l = []
-
-        for i in tqdm(range( horizon)):
-            l.append(np.array(list_correlation(test_x[:,-1, :], test_y[:, i, :])))
-        return l
-    
-    l = np.array(baseline())
-    print(l.shape)
-    np.savez_compressed('../models/baseline/baseline_all_channels.npz', l)
-        
+    horizon = 160
+    train,  valid, test = data(int(pred), relation= "3", stimulus= "2", horizon = horizon,  split = True , multivariate = True)
+    test_X, test_Y = test
+    baseline = baseline(test_X, test_Y)
     '''
+    
+    
+    
+    
 
   
 
@@ -64,3 +50,4 @@ if __name__ == "__main__":
 
     print("hello")
  
+    

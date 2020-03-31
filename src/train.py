@@ -13,16 +13,17 @@ from numpy import savez_compressed
 pred = os.environ["pred"]
 stimulus = os.environ["stimulus"]
 relation = os.environ["relation"]
+model_name = os.environ["model_name"]
 
 
 if __name__ == "__main__":
     
     # Set the Training parameter to False to True whether you want training 
-    training = True
-    model_name = "CNN"
+    training =  False
+    model_name = model_name
 
     #No of predictions steps ahead
-    horizon = 1
+    horizon = 160
 
     multivariate = False
     split = True
@@ -88,7 +89,7 @@ if __name__ == "__main__":
 
     else: 
 
-        model = load_model('../models/{}/model_LSTM_all_channel.h5'.format(model_name))
+        model = load_model('../models/{}/model_{}_all_channel.h5'.format(model_name, model_name))
         print(model.summary())
 
     

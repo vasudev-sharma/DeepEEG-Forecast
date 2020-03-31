@@ -152,23 +152,20 @@ def split_trials(trials):
  
 def get_info(pred, relation, stimulus):
 
-    electi = [i for i in range(1, 65) if i!=pred]
-    #electi = list(map(int, eltmp.split()))    #separation of the different responses and recovery in the form of a list of integers
-    #print (type(electi))
-    print(electi)
+  
 
     window = 160
 
     #n_channel = input('Enter  the chanel number for which you want your predicion: ')
-
-    n_channel = electi
-    print("The value of channel to be predicted is ", n_channel)
 
 
     #relation = input('Please define what should be predicted (1 for EEG from stimulus or 2 for stimulus from EEG or 3 for EEG forecasting ):')
 
     if relation == '1':
         #response = input("Do you want to embed information of EEG as well ? ( 1 for yes or 2 for no)")
+        electi = [pred]
+        print(electi)
+
         if stimulus == "2":
             source_Y = electi   #retrieving the electrode number as a whole number - implies that there is only one electrode chosen in this direction
             source_X = [0]          #conversion of the stimuli line in the form of a list - necessary for the for loop: see below - extraction X
@@ -177,11 +174,24 @@ def get_info(pred, relation, stimulus):
             source_X = [0] + electi[0]
 
     elif relation == '2':
+        
+        electi = [pred]
+        print(electi)
+
         #format_1 = np.flip(format_1,2)     # data inversion according to the time dimension - problem ????
-        source_Y = 0
+        source_Y = [0]
         source_X = electi
         
     elif relation == '3':
+        electi = [i for i in range(1, 65) if i!=pred]
+        print(electi)
+
+        if len(electi)!= 64:
+          n_chanbel = pred  
+        else:
+          n_channel = electi
+          print("The value of channel to be predicted is ", n_channel)
+
         #response = input("Do you want to embed information of Stimuli as well ? ( 1 for yes or 2 for no)") 
         if stimulus == "2":
             source_Y = n_channel

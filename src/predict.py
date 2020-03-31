@@ -56,7 +56,7 @@ def predict_multi_timestep(model, input, horizon = 160, model_name = "LR"):
 def baseline(test_x, test_y):
     horizon = 160 
     l = []
-
+    print(test_x.shape, test_y.shape)
     for i in tqdm(range( horizon)):
         l.append(np.array(list_correlation(test_x[:,-1, :], test_y[:, i, :])))
     l = np.array(l)
