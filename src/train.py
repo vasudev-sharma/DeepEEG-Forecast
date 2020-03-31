@@ -17,13 +17,21 @@ if __name__ == "__main__":
     
     # Set the Training parameter to False to True whether you want training 
     training = False
-    model_name = "LR"
+    model_name = "LSTM"
 
     #No of predictions steps ahead
     horizon = 160
 
+    multivaritate = False
+    split = True
+    if horizon > 1:
+        multivariate = True
+    if model_name == "LR":
+        split = False 
+    
+
     print("The predicted value is ", pred)
-    train, valid, test = data(int(pred), relation= "3", response= "2", horizon = horizon,  split = False , multivariate = True)
+    train, valid, test = data(int(pred), relation= "3", response= "2", horizon = horizon,  split = split , multivariate = multivariate)
 
     train_X, train_Y = train
     valid_X, valid_Y = valid
@@ -74,11 +82,11 @@ if __name__ == "__main__":
             verbose = 1,
             )
 
-        model.save('../models/LSTM/LSTM.h5')
+        model.save('../models/{}/{}.h5'.format(model_name, model_name))
 
     else: 
 
-        model = load_model('../models/{}/LR_3_2_all_channels.h5'.format(model_name))
+        model = load_model('../models/{}/model_LSTM_all_channel.h5'.format(model_name))
         print(model.summary())
 
     
