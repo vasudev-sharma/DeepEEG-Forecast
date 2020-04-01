@@ -1,26 +1,14 @@
-import os
-import json
-from tensorflow.keras import optimizers
-from input import data
-from tensorflow.keras.models import load_model
-from predict import predict_single_timestep, predict_multi_timestep
-from models import get_model
-from metrics import compute_correlation, list_correlation
-from tensorflow.keras.callbacks import ReduceLROnPlateau
-from utils import plot_multistep_prediction
-from numpy import savez_compressed
 
-pred = os.environ["pred"]
-stimulus = os.environ["stimulus"]
-relation = os.environ["relation"]
-model_name = os.environ["model_name"]
+from kerastuner import RandomSearch
+from kerastuner.engine.hyperparameters import HyperParameters
+from models import conv_1D_hp
+import random 
+import string
 
 
-if __name__ == "__main__":
-    
-    # Set the Training parameter to False to True whether you want training 
+ # Set the Training parameter to False to True whether you want training 
     training =  True
-    model_name = model_name
+    model_name = "CNN_hp"
 
     #No of predictions steps ahead
     horizon = 160
@@ -60,31 +48,53 @@ if __name__ == "__main__":
                                 patience=10, min_lr=0.00001)
         '''
 
-        
+        flag_tuning = False   % Set the hyper param tuning if you want to tune number of layer, model etc
         
         model = get_model()[model_name]
         if model_name == "LSTM":
             model = model(train_X.shape, units, train_Y.shape[-1], learning_rate)
         elif model_name == "CNN":
             model = model(train_X.shape, units, train_Y.shape[-1], learning_rate)
-        else:
+        elif model_name =="LR":
             model = model(train_X.shape, learning_rate)
+        else:
+            flag_tuning = True
+            model = model 
+        
+        if flag_tuning == True:
+            training_epochs = 5
+            random_string = ''.join([random.choice(string.ascii_letters + string.digits) for n in xrange(5)])
 
-
-
-        print(model.summary())
-
-        # Fit the model with the Data
-        history = model.fit(
-            train_X, 
-            train_Y, 
-            batch_size = batch_size,
-            epochs = training_epochs, 
-            validation_data = (valid_X, valid_Y), 
-            verbose = 1,
+            tuner_search=RandomSearch(model,
+                                    objective='val_loss',
+                                    max_trials=2,project_name=random_string,
+                                    executions_per_trial=1,
             )
 
-        model.save('../models/{}/{}.h5'.format(model_name, model_name))
+            tuner_search.search(train_X, 
+                train_Y, 
+                batch_size = batch_size,
+                epochs = training_epochs, 
+
+                validation_data = (valid_X, valid_Y))
+
+            tuner_search.results_summary()
+
+        else:
+
+            print(model.summary())
+
+            # Fit the model with the Data
+            history = model.fit(
+                train_X, 
+                train_Y, 
+                batch_size = batch_size,
+                epochs = training_epochs, 
+                validation_data = (valid_X, valid_Y), 
+                verbose = 1,
+                )
+
+            model.save('../models/{}/{}.h5'.format(model_name, model_name))
 
     else: 
 
@@ -127,3 +137,4 @@ if __name__ == "__main__":
         with open("corr_dat.json", "a") as write_file:
             json.dump(data, write_file)
         
+
