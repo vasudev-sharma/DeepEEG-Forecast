@@ -17,3 +17,6 @@ src/__pycache__/train.cpython-36.pyc
 
 #Input Files
 input/
+
+#Ignore the experiment Files for hyper parameter tuning 
+src/experiment/
