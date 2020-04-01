@@ -126,6 +126,11 @@ def vanilla_LSTM(dim,  units, source_Y, learning_rate):
 
     return model
 
+'''
+Models for Tuning
+'''
+
+
 def conv_1D_hp(hp):
 
   window = 160 
@@ -148,6 +153,10 @@ def conv_1D_hp(hp):
       LeakyReLU(),
       MaxPooling1D(pool_size= 2),
 
+      
+      Conv1D(filters =  hp.Int('conv_4_filter', min_value= 8, max_value=64, step= 8 ), kernel_size = hp.Choice('conv_4_kernel', values = [3,5])),
+      LeakyReLU(),
+      MaxPooling1D(pool_size= 2),
   
       
       Flatten(),
@@ -167,6 +176,34 @@ def conv_1D_hp(hp):
   return model
 
 
+#RNN
+def vanilla_LSTM_hp(hp):
+
+    learning_rate = 0.1
+    window = 160
+    features = 64
+
+  
+    
+    model = Sequential([
+
+    LSTM(hp.Int('LSTM_1_units', min_value=2, max_value= 150, step= 16)),
+    Dense(features, activation = "linear", kernel_initializer = 'normal')
+    
+    ])
+
+    #Set up the Optimizers
+    sgd = optimizers.SGD(learning_rate)
+    adam = optimizers.Adam(lr = learning_rate)
+    rmsprop = optimizers.RMSprop(lr = learning_rate)
+
+
+    #Compile the model
+    model.compile(loss = 'mse', optimizer = sgd, metrics=['mse'])
+        
+
+    return model
+
 
 def get_model():
 
@@ -174,5 +211,6 @@ def get_model():
             "LSTM": vanilla_LSTM, 
             "CNN": conv_1D, 
             "RNN":vanilla_RNN,
-            "CNN_hp":conv_1D_hp}
+            "CNN_hp":conv_1D_hp,
+            "LSTM_hp":vanilla_LSTM_hp}
   return MODELS
