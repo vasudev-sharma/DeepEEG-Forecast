@@ -16,6 +16,7 @@ from metrics import compute_correlation, list_correlation
 from tensorflow.keras.callbacks import ReduceLROnPlateau
 from utils import plot_multistep_prediction
 from numpy import savez_compressed
+import sys
 
 
 
@@ -84,7 +85,7 @@ if __name__ == "__main__":
 
             tuner_search=RandomSearch(model,
                                     objective='val_loss',
-                                    max_trials=2,project_name=random_string,
+                                    max_trials=20,project_name=random_string,
                                     executions_per_trial=1,
             )
 
@@ -96,6 +97,7 @@ if __name__ == "__main__":
                 validation_data = (valid_X, valid_Y))
 
             tuner_search.results_summary()
+            sys.exit()
 
         else:
 
