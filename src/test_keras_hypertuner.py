@@ -1,14 +1,31 @@
 
 from kerastuner import RandomSearch
 from kerastuner.engine.hyperparameters import HyperParameters
-from models import conv_1D_hp
+
 import random 
 import string
 
+import os
+import json
+from tensorflow.keras import optimizers
+from input import data
+from tensorflow.keras.models import load_model
+from predict import predict_single_timestep, predict_multi_timestep
+from models import get_model
+from metrics import compute_correlation, list_correlation
+from tensorflow.keras.callbacks import ReduceLROnPlateau
+from utils import plot_multistep_prediction
+from numpy import savez_compressed
+
+
 
  # Set the Training parameter to False to True whether you want training 
+if __name__ == "__main__":
+    relation = "3"
+    stimulus = "2"
     training =  True
     model_name = "CNN_hp"
+    pred = -1
 
     #No of predictions steps ahead
     horizon = 160
@@ -48,7 +65,7 @@ import string
                                 patience=10, min_lr=0.00001)
         '''
 
-        flag_tuning = False   % Set the hyper param tuning if you want to tune number of layer, model etc
+        flag_tuning = False   # Set the hyper param tuning if you want to tune number of layer, model etc
         
         model = get_model()[model_name]
         if model_name == "LSTM":
@@ -63,7 +80,7 @@ import string
         
         if flag_tuning == True:
             training_epochs = 5
-            random_string = ''.join([random.choice(string.ascii_letters + string.digits) for n in xrange(5)])
+            random_string = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(5)])
 
             tuner_search=RandomSearch(model,
                                     objective='val_loss',

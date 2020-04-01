@@ -1,8 +1,8 @@
 
 from tensorflow.keras.layers import *
-from tensorflow.keras.models import Model
+from tensorflow.keras.models import Model, Sequential
 from tensorflow.keras import initializers
-from tensorflow.keras.optimizers import *
+from tensorflow.keras import optimizers
 
 
 
@@ -77,7 +77,7 @@ def conv_1D(dim, source_Y, learning_rate):
 
 
 #RNN
-def vanilla_RNN(dim,  units, source_Y, learning_rate)):
+def vanilla_RNN(dim,  units, source_Y, learning_rate):
 
     _, window, features = dim
     inp = Input([window, features])
@@ -130,7 +130,7 @@ def conv_1D_hp(hp):
 
   window = 160 
   learning_rate = 0.01
-  features = 63
+  features = 64
  
   model = Sequential([
 
@@ -173,6 +173,6 @@ def get_model():
   MODELS = {"LR":linear_regression,
             "LSTM": vanilla_LSTM, 
             "CNN": conv_1D, 
-            "RNN":vanilla_RNN
+            "RNN":vanilla_RNN,
             "CNN_hp":conv_1D_hp}
   return MODELS
