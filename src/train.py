@@ -36,6 +36,14 @@ if __name__ == "__main__":
         multivariate = True
     if model_name == "LR":
         split = False 
+
+    print("The predicted value is ", pred)
+    train, valid, test = data(int(pred), relation= relation, stimulus= stimulus, horizon = horizon,  split = split , multivariate = multivariate)
+
+    train_X, train_Y = train
+    valid_X, valid_Y = valid
+    test_X, test_Y = test
+
     
     if training: 
 
@@ -70,7 +78,6 @@ if __name__ == "__main__":
                 model = model 
             
             if flag_tuning == True:
-                training_epochs = 5
                 random_string = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(5)])
 
                 tuner_search=RandomSearch(model,
@@ -105,45 +112,45 @@ if __name__ == "__main__":
 
                 model.save('../models/{}/{}.h5'.format(model_name, model_name))
 
-        else: 
+    else: 
 
-            model = load_model('../models/{}/model_{}_all_channel.h5'.format(model_name, model_name))
-            print(model.summary())
+        model = load_model('../models/{}/model_{}_all_channel.h5'.format(model_name, model_name))
+        print(model.summary())
 
+    
+    #Predict the Y values for the given test set
+    predictions = predict_multi_timestep(model, test_X, horizon = horizon, model_name = model_name)
+
+    #plot_multistep_prediction(test_Y, predictions )
+
+    #Actual and Predicted values for Single electrode mutistep 
+    true = test_Y[:, :, 63]
+    pred = predictions[:, :, 63]
+
+    corr = list_correlation(true, pred)
+    print("The value of correlation is for electrode 63 is {}". format(corr))
+
+
+    '''Save the predicted and True values in the numpy array'''
+    savez_compressed('/root/EEG/models/{}/True.npz'.format(model_name), test_Y)
+    savez_compressed('/root/EEG/models/{}/predicted.npz'.format(model_name), predictions)
+
+
+
+    '''
+
+    #Compute Correlation coefficient 
+    corr = compute_correlation(predictions, test_Y)
+    print("The value of correlation is for electrode {} is {}". format(pred, corr))
+
+    '''
+
+    
+
+    if pred!=-1:
+        #Dump the values in json file
+        data= {"Electrode_"+pred:corr}
+        with open("corr_dat.json", "a") as write_file:
+            json.dump(data, write_file)
         
-        #Predict the Y values for the given test set
-        predictions = predict_multi_timestep(model, test_X, horizon = horizon, model_name = model_name)
-
-        #plot_multistep_prediction(test_Y, predictions )
-
-        #Actual and Predicted values for Single electrode mutistep 
-        true = test_Y[:, :, 63]
-        pred = predictions[:, :, 63]
-
-        corr = list_correlation(true, pred)
-        print("The value of correlation is for electrode 63 is {}". format(corr))
-
-
-        '''Save the predicted and True values in the numpy array'''
-        savez_compressed('/root/EEG/models/{}/True.npz'.format(model_name), test_Y)
-        savez_compressed('/root/EEG/models/{}/predicted.npz'.format(model_name), predictions)
-
-
-
-        '''
-
-        #Compute Correlation coefficient 
-        corr = compute_correlation(predictions, test_Y)
-        print("The value of correlation is for electrode {} is {}". format(pred, corr))
-
-        '''
-
-        
-
-        if pred!=-1:
-            #Dump the values in json file
-            data= {"Electrode_"+pred:corr}
-            with open("corr_dat.json", "a") as write_file:
-                json.dump(data, write_file)
-            
 
