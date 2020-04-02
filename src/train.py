@@ -46,6 +46,7 @@ if __name__ == "__main__":
         multivariate = True
     if model_name == "LR":
         split = False 
+        
 
     
 
@@ -65,13 +66,18 @@ if __name__ == "__main__":
 
             #Parameters of model
             training_epochs = parameters["training_epochs"]
-            batch_size = parameters["batch_size"]
+            if model_name == "LR" and relation=="1":
+                batch_size = train_X.shape[0]
+            else:     
+                batch_size = parameters["batch_size"]
+            
             units = parameters["units"]
             learning_rate = parameters["learning_rate"]
             if(model_name == "LSTM" or model_name=="LSTM_hp"):
                 cell_type = parameters["cell_type"]
-
             
+
+
             '''
             reduce_lr = ReduceLROnPlateau(monitor='val_loss', factor=0.1,
                                     patience=10, min_lr=0.00001)
@@ -82,8 +88,8 @@ if __name__ == "__main__":
             model = get_model()[model_name]
             if model_name == "LSTM":
                 model = model(train_X.shape, units, train_Y.shape[-1], cell_type, learning_rate)
-            elif model_name == "CNN":
-                model = model(train_X.shape, units, train_Y.shape[-1], learning_rate)
+            elif model_name == "CNN" or model_name =="CNN_cross":
+                model = model(train_X.shape, train_Y.shape[-1], learning_rate)
             elif model_name =="LR":
                 model = model(train_X.shape, learning_rate)
             else:
@@ -117,12 +123,10 @@ if __name__ == "__main__":
                 training_epochs = 30
 
 
-           
-
-           
-
             print(model.summary())
             # Fit the model with the Data
+
+
             history = model.fit(
                 train_X, 
                 train_Y, 
@@ -132,7 +136,9 @@ if __name__ == "__main__":
                 verbose = 1,
                 )
 
-            model.save('../models/{}/{}.h5'.format(model_name, model_name))
+            if flag_tuning == False:
+                pass
+                #model.save('../models/{}/{}.h5'.format(model_name, model_name))
 
     else: 
 
@@ -173,12 +179,13 @@ if __name__ == "__main__":
         if model_name == "LR":
              weights = np.array(model.get_weights())
              plot_weights(weights, pred, window)
-            
 
 
-    '''Save the predicted and True values in the numpy array'''
-    savez_compressed('/root/EEG/models/{}/True.npz'.format(model_name), test_Y)
-    savez_compressed('/root/EEG/models/{}/predicted.npz'.format(model_name), predictions)
+    if flag_tuning == False:
+
+        '''Save the predicted and True values in the numpy array'''
+        savez_compressed('/root/EEG/models/{}/True.npz'.format(model_name), test_Y)
+        savez_compressed('/root/EEG/models/{}/predicted.npz'.format(model_name), predictions)
 
 
 

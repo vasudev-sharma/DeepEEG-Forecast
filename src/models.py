@@ -12,11 +12,12 @@ def linear_regression(dim, learning_rate):
 
     _, features = dim 
     out_features = features / 160
-    inp = Input((features,))
 
-    X = inp
-    out = Dense(out_features, activation = "linear", kernel_initializer = "normal" )(X)
-    model = Model(inputs = inp , output = out)
+  
+
+    model = Sequential([
+    Dense( int(out_features), input_shape = (features,) ,activation = "linear", kernel_initializer = "normal" )
+                    ])
 
      #Set up the Optimizers
     sgd = optimizers.SGD(learning_rate)
@@ -31,7 +32,7 @@ def linear_regression(dim, learning_rate):
 
 
 
-
+'''CNN Models'''
 
 #COnvolutional Neural Network
 def conv_1D(dim, source_Y, learning_rate):
@@ -77,32 +78,6 @@ def conv_1D(dim, source_Y, learning_rate):
     model.compile(loss = 'mse', optimizer = sgd, metrics=['mse'])
     
     model = Model(inputs = inp, outputs = out)
-    return model
-
-
-
-
-#RNN
-def vanilla_RNN(dim,  units, source_Y, learning_rate):
-
-    _, window, features = dim
-    inp = Input([window, features])
-    X = inp
- 
-    X = SimpleRNN(units)(X)
-    out = Dense(source_Y, activation = "linear", kernel_initializer = 'normal')(X)
-    
-    model = Model(inputs = inp, outputs = out)
-
-     #Set up the Optimizers
-    sgd = optimizers.SGD(learning_rate)
-    adam = optimizers.Adam(lr = learning_rate)
-    rmsprop = optimizers.RMSprop(lr = learning_rate)
-
-
-    #Compile the model
-    model.compile(loss = 'mse', optimizer = sgd, metrics=['mse'])
-
     return model
 
 
@@ -172,18 +147,18 @@ def conv_1D_cross_hp(hp):
   model = Sequential([
 
     Conv1D(input_shape = (window, features), filters = hp.Int('conv_1_filter', min_value=2, max_value= 6, step= 1),  kernel_size=hp.Choice('conv_1_kernel', values = [3,5])),
-    LeakyReLU(),
+    ELU(),
     MaxPooling1D(pool_size= 2),
 
   
     
     Conv1D(filters =  hp.Int('conv_2_filter', min_value=2, max_value= 6, step= 1 ), kernel_size = hp.Choice('conv_2_kernel', values = [3,5])),
-    LeakyReLU(),
+    ELU(),
     MaxPooling1D(pool_size= 2),
 
     
     Conv1D(filters =  hp.Int('conv_3_filter', min_value=2, max_value= 6, step= 1), kernel_size = hp.Choice('conv_3_kernel', values = [3,5])),
-    LeakyReLU(),
+    ELU(),
     MaxPooling1D(pool_size= 2),
 
     
@@ -202,6 +177,48 @@ def conv_1D_cross_hp(hp):
   model.compile(loss = 'mse', optimizer = sgd, metrics=['mse'])
     
   return model
+
+
+'''Models for Cross Correlation between Stimuli and EEG'''
+
+def conv_1D_cross(dim, source_Y, learning_rate):
+
+    _, window, features = dim
+
+  
+    model = Sequential([
+
+    Conv1D(input_shape = (window, features), filters = 2,  kernel_size = 5),
+       ELU(),
+    MaxPooling1D(pool_size= 2),
+
+  
+    
+    Conv1D(filters = 4 , kernel_size = 5),
+     ELU(),
+    MaxPooling1D(pool_size= 2),
+
+    
+    Conv1D(filters = 4,  kernel_size = 5),
+       ELU(),
+    MaxPooling1D(pool_size= 2),
+
+    
+    Flatten(),
+    #out = Activation("linear")(X)
+    #X = Dense(50, activation = "relu")(X)
+    Dense(features, activation = "linear",  kernel_initializer = 'normal')
+    ])
+    #Set up the Optimizers
+    sgd = optimizers.SGD(learning_rate)
+    adam = optimizers.Adam(lr = learning_rate)
+    rmsprop = optimizers.RMSprop(lr = learning_rate)
+
+
+    #Compile the model
+    model.compile(loss = 'mse', optimizer = adam, metrics=['mse'])
+        
+    return model
 
 
 
@@ -314,6 +331,7 @@ def get_model():
             "LSTM_hp":vanilla_LSTM_hp,
             "LSTM_cross_hp": vanilla_LSTM_cross_hp,
             "CNN_cross_hp":conv_1D_cross_hp,
+            "CNN_cross":conv_1D_cross
 
             }
   return MODELS
