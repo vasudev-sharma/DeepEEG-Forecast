@@ -1,10 +1,10 @@
 export stimulus='2' # Whether you want to use stimulus or not 2 ---> yes, 1 ---> no
-export relation='3' # What you want to predict 1--> EEG from stimulus, 2---> Stimulus from EEG, 3 --> EEG forecasting
-export model_name="CNN_hp"
+export relation='1' # What you want to predict 1--> EEG from stimulus, 2---> Stimulus from EEG, 3 --> EEG forecasting
+export model_name="CNN_cross_hp"
+export horizon=1
 #set pred to -1 if you want to predict future value of EEG using their past value and if you want to want to preidict single electrode future value from their past value declare a sequence in the for loop like this `seq 1 30`
-for i in -1;
+for i in 30;
 do 
-   export pred=$i 
-    
+   export pred=$i
     python -m train
 done
