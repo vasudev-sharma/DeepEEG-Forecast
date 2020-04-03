@@ -7,9 +7,10 @@ from predict import predict_single_timestep, predict_multi_timestep
 from models import get_model
 from metrics import compute_correlation, list_correlation
 from tensorflow.keras.callbacks import ReduceLROnPlateau
-from utils import plot_multistep_prediction
+from utils import plot_multistep_prediction, plot_loss_curve
 from numpy import savez_compressed
 import numpy as np
+from tqdm import tqdm
 from kerastuner import RandomSearch
 from kerastuner.engine.hyperparameters import HyperParameters
 import sys
@@ -20,7 +21,7 @@ import string
 
 pred = os.environ["pred"]
 stimulus = os.environ["stimulus"]
-relation = os.environ["relation"]
+input_task = os.environ["input_task"]
 model_name = os.environ["model_name"]
 horizon = os.environ["horizon"]
 
@@ -51,7 +52,7 @@ if __name__ == "__main__":
     
 
     print("The predicted value is ", pred)
-    train, valid, test = data(int(pred), relation= relation, stimulus= stimulus, horizon = horizon,  split = split , multivariate = multivariate)
+    train, valid, test = data(int(pred), input_task= input_task, stimulus= stimulus, horizon = horizon,  split = split , multivariate = multivariate)
 
     train_X, train_Y = train
     valid_X, valid_Y = valid
@@ -66,7 +67,7 @@ if __name__ == "__main__":
 
             #Parameters of model
             training_epochs = parameters["training_epochs"]
-            if model_name == "LR" and relation=="1":
+            if model_name == "LR" and input_task=="1":
                 batch_size = train_X.shape[0]
             else:     
                 batch_size = parameters["batch_size"]
@@ -126,15 +127,29 @@ if __name__ == "__main__":
             print(model.summary())
             # Fit the model with the Data
 
+            if model_name.startswith("LSTM")  :
+                for i in tqdm(range(training_epochs)):
+                    history = model.fit(
+                        train_X, 
+                        train_Y, 
+                        batch_size = 680,
+                        epochs = 1, 
+                        validation_data = (valid_X, valid_Y), 
+                        verbose = 1,
+                        shuffle = False
+                        )
+                    model.reset_states()
+                
 
-            history = model.fit(
-                train_X, 
-                train_Y, 
-                batch_size = batch_size,
-                epochs = training_epochs, 
-                validation_data = (valid_X, valid_Y), 
-                verbose = 1,
-                )
+            else:
+                history = model.fit(
+                        train_X, 
+                        train_Y, 
+                        batch_size = batch_size,
+                        epochs = training_epochs, 
+                        validation_data = (valid_X, valid_Y), 
+                        verbose = 1,
+                        )
 
             if flag_tuning == False:
                 pass
@@ -145,22 +160,39 @@ if __name__ == "__main__":
         model = load_model('../models/{}/model_{}_all_channel.h5'.format(model_name, model_name))
         print(model.summary())
 
+    
+    #Plot Training and Validation Loss
+    plot_loss_curve(history)
 
-    if relation == "3":  #If you are performing Forecasting
-        if pred == -1: #Predicting the Future time step values of all the electrodes
-
+    if input_task == "3":  #If you are performing Forecasting
+        if int(pred) == -1: #Predicting the Future time step values of all the electrodes
             if horizon > 1:
                 #Predict the Y values for the given test set
-                predictions = predict_multi_timestep(model, test_X, horizon = horizon, model_name = model_name)
+                predictions = predict_multi_timestep(model, test_X, horizon = horizon, model_name = model_name)  #Output shape (Batch_size, horizon, features)
+                #plot_multistep_prediction(test_Y, predictions ) 
 
-                #plot_multistep_prediction(test_Y, predictions )
 
-            #Actual and Predicted values for Single electrode mutistep 
-            true = test_Y[:, :, 63]
-            pred = predictions[:, :, 63]
+                #Actual and Predicted values for Single electrode mutistep 
+                true_elec = test_Y[:, :, 63]
+                pred_elec = predictions[:, :, 63]
 
-            corr = list_correlation(true, pred)
-            print("The value of correlation is for electrode 63 is {}". format(corr))
+                #R value of a single electrode for all the time steps
+                corr = list_correlation(true_elec, pred_elec)
+
+                print("The value of correlation is for electrode 63 is {}". format(corr))
+
+               
+            else: 
+
+                predictions = predict_single_timestep(model, test_X)  #Output shape is (Batch_Size, n_features)
+                corr = list_correlation(predictions, test_Y)           #List of r value of all the the electrodes 
+
+                print(corr)
+                    
+            
+            
+            with open("corr_dat.json", "a") as write_file:
+                json.dump(corr, write_file)
     
     else: #Prediciting next time point of a single electrode or stimulus
     

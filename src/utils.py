@@ -12,6 +12,17 @@ def rolling_window(a, window):
     return np.lib.stride_tricks.as_strided(a, shape=shape, strides=strides)
 
 
+def plot_loss_curve(history):
+    plt.plot(history.history['loss'])
+    plt.plot(history.history['val_loss'])
+    plt.title('model loss')
+    plt.ylabel('loss')
+    plt.xlabel('epoch')
+    plt.legend(['train', 'valid'], loc='upper left')
+    plt.savefig("Train_Valid.png")
+    plt.figure()
+  
+
 def show_data(data,channel, trial):
   # Plot EEG
   # plot of a single channel of EEG

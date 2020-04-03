@@ -230,19 +230,19 @@ def conv_1D_cross(dim, source_Y, learning_rate):
 def vanilla_LSTM(dim,  units, source_Y, cell_type, learning_rate):
 
     _, window, features = dim
-    inp = Input([window, features])
-    X = inp
+    model = Sequential()
+    batch_size = 680
     if cell_type == "LSTM":
-        X = LSTM(units)(X)
+        model.add(LSTM(units, batch_input_shape = (batch_size, window, features), stateful = True))
     elif cell_type == "RNN":
-        X = SimpleRNN(units)(X)
+        model.add(SimpleRNN(units))
     else:
-        X = GRU(units)(X) 
+        model.add(GRU(units))
 
-    out = Dense(source_Y, activation = "linear", kernel_initializer = 'normal')(X)
+    model.add(Dense(source_Y, activation = "linear", kernel_initializer = 'normal'))
     #out = Lambda(lambda x: x * 2)(X)
     
-    model = Model(inputs = inp, outputs = out)
+
 
     #Set up the Optimizers
     sgd = optimizers.SGD(learning_rate)

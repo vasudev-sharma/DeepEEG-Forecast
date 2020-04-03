@@ -150,7 +150,7 @@ def split_trials(trials):
   return trials_train, trials_valid, trials_test
 
  
-def get_info(pred, relation, stimulus):
+def get_info(pred, input_task, stimulus):
 
   
 
@@ -159,9 +159,9 @@ def get_info(pred, relation, stimulus):
     #n_channel = input('Enter  the chanel number for which you want your predicion: ')
 
 
-    #relation = input('Please define what should be predicted (1 for EEG from stimulus or 2 for stimulus from EEG or 3 for EEG forecasting ):')
+    #input_task = input('Please define what should be predicted (1 for EEG from stimulus or 2 for stimulus from EEG or 3 for EEG forecasting ):')
 
-    if relation == '1':
+    if input_task == '1':
         #response = input("Do you want to embed information of EEG as well ? ( 1 for yes or 2 for no)")
         electi = [pred]
         print(electi)
@@ -173,7 +173,7 @@ def get_info(pred, relation, stimulus):
             source_Y = electi[0]
             source_X = [0] + electi[0]
 
-    elif relation == '2':
+    elif input_task == '2':
         
         electi = [pred]
         print(electi)
@@ -182,7 +182,7 @@ def get_info(pred, relation, stimulus):
         source_Y = [0]
         source_X = electi
         
-    elif relation == '3':
+    elif input_task == '3':
         electi = [i for i in range(1, 65) if i!=pred]
         print(electi)
 
@@ -202,12 +202,12 @@ def get_info(pred, relation, stimulus):
 
     return source_X, source_Y, window
 
-def data(pred, relation, stimulus,  horizon,  split, multivariate):
+def data(pred, input_task, stimulus,  horizon,  split, multivariate):
     
     '''
 
     param: pred - a integer parameter to predict the channel in the eeg experiment
-    param: relation - a string indicating which task to perform 1 --> Stiluli to EEG
+    param: input_task - a string indicating which task to perform 1 --> Stiluli to EEG
                                                                 2 --> EEG to stimuli 
                                                                 3 --> EEG to EEG porecasting
     param: stimulus - string indicating ti whether include stimuli or not in the data 
@@ -221,7 +221,7 @@ def data(pred, relation, stimulus,  horizon,  split, multivariate):
      '''                                            
 
 
-    source_X, source_Y, window = get_info(pred, relation, stimulus)
+    source_X, source_Y, window = get_info(pred, input_task, stimulus)
     
     #get data
     data, trials = get_data()
