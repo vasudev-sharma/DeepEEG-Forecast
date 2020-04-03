@@ -6,7 +6,7 @@ import scipy.io as sio
 rng = np.random
 
 from scipy import stats
-from utils import rolling_window
+from utils import rolling_window, preprocess_data
 
 
 
@@ -25,8 +25,10 @@ def get_data():
 
   #Z score
   format_1=stats.zscore(format_1, axis=2)
+
+  format_1, scaler = preprocess_data(format_1)
   #format_1 = format_1[:, :, 160:]
-  return format_1, trials
+  return format_1, trials, scaler
 
 
 
@@ -170,8 +172,8 @@ def get_info(pred, input_task, stimulus):
             source_Y = electi   #retrieving the electrode number as a whole number - implies that there is only one electrode chosen in this direction
             source_X = [0]          #conversion of the stimuli line in the form of a list - necessary for the for loop: see below - extraction X
         else:
-            source_Y = electi[0]
-            source_X = [0] + electi[0]
+            source_Y = electi
+            source_X = [0] + electi
 
     elif input_task == '2':
         
@@ -187,7 +189,7 @@ def get_info(pred, input_task, stimulus):
         print(electi)
 
         if len(electi)!= 64:
-          n_chanbel = pred  
+          n_channel = pred  
         else:
           n_channel = electi
           print("The value of channel to be predicted is ", n_channel)
@@ -224,9 +226,9 @@ def data(pred, input_task, stimulus,  horizon,  split, multivariate):
     source_X, source_Y, window = get_info(pred, input_task, stimulus)
     
     #get data
-    data, trials = get_data()
+    data, trials, scaler = get_data()
 
-    return(split_data(data, window, trials, source_Y, source_X, horizon, split, multivariate))
+    return(split_data(data, window, trials, source_Y, source_X, horizon, split, multivariate), scaler)
 
 
 

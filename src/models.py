@@ -231,13 +231,13 @@ def vanilla_LSTM(dim,  units, source_Y, cell_type, learning_rate):
 
     _, window, features = dim
     model = Sequential()
-    batch_size = 680
+
     if cell_type == "LSTM":
-        model.add(LSTM(units, batch_input_shape = (batch_size, window, features), stateful = True))
+        model.add(LSTM(units, input_shape = ( window, features)))
     elif cell_type == "RNN":
-        model.add(SimpleRNN(units))
+        model.add(SimpleRNN(units), input_shape = ( window, features))
     else:
-        model.add(GRU(units))
+        model.add(GRU(units), input_shape = ( window, features))
 
     model.add(Dense(source_Y, activation = "linear", kernel_initializer = 'normal'))
     #out = Lambda(lambda x: x * 2)(X)
@@ -266,12 +266,14 @@ def vanilla_LSTM_hp(hp):
     window = 160
     features = 64
 
-  
+    print("hello")
     
     model = Sequential([
 
-    LSTM(hp.Int('LSTM_1_units', min_value=2, max_value= 150, step= 16)),
-    Dense(features, activation = "linear", kernel_initializer = 'normal')
+    LSTM(units = hp.Int('LSTM_1_units', min_value=2, max_value= 100, step= 16), input_shape = (window, features), return_sequences = True),
+    LSTM(units = hp.Int('LSTM_2_units', min_value=2, max_value= 100, step= 16), return_sequences = True),
+    LSTM(units = hp.Int('LSTM_3_units', min_value=2, max_value= 100, step= 16)),
+    Dense(features, activation = "linear")
     
     ])
 
@@ -295,11 +297,9 @@ def vanilla_LSTM_cross_hp(hp):
     window = 160
     features = 1
 
-  
-    
     model = Sequential([
 
-    LSTM(hp.Int('LSTM_1_units', min_value=2, max_value= 20, step= 2)),
+    LSTM( hp.Int('LSTM_1_units', min_value=2,max_value= 20, step= 2), input_shape = (None, features)),
     Dense(features, activation = "linear", kernel_initializer = 'normal')
     
     ])
@@ -332,6 +332,5 @@ def get_model():
             "LSTM_cross_hp": vanilla_LSTM_cross_hp,
             "CNN_cross_hp":conv_1D_cross_hp,
             "CNN_cross":conv_1D_cross
-
             }
   return MODELS

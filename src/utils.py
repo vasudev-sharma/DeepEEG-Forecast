@@ -4,6 +4,7 @@ from tensorflow.keras.callbacks import TensorBoard
 import tensorflow as tf 
 from  keras import backend as K
 from metrics import compute_correlation
+from sklearn.preprocessing import MinMaxScaler
 import os 
 
 def rolling_window(a, window):
@@ -11,6 +12,34 @@ def rolling_window(a, window):
     strides = a.strides + (a.strides[-1],)
     return np.lib.stride_tricks.as_strided(a, shape=shape, strides=strides)
 
+def preprocess_data(data):
+    #Reshape 3d array to 2d so it get's prrocessed by scikit learn
+    channel, trial, time_points = data.shape[0], data.shape[1], data.shape[2]
+    data = data.reshape(channel, -1)
+    
+    #Min max scaler for normalizing the data
+    scaler = MinMaxScaler(feature_range=(0, 1))
+    scaler = scaler.fit(data)
+    normalized = scaler.transform(data)
+    
+    #reshape the data to 3D array again
+    normalized = normalized.reshape(channel, trial, time_points)
+
+
+    return normalized, scaler
+
+
+def inv_data(data, scaler):
+    #Reshape 3d array to 2d so it get's prrocessed by scikit learn
+    channel, trial, time_points = data.shape[0], data.shape[1], data.shape[2]
+    data = data.reshape(channel, -1)
+    
+    #Retrieve the original data
+    inversed = scaler.inverse_transform(data)
+
+    #reshape the data to 3D array again
+    original_data = inversed.reshape(channel, trial, time_points)
+    return original_data
 
 def plot_loss_curve(history):
     plt.plot(history.history['loss'])
