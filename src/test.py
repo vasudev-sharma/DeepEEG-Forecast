@@ -11,7 +11,7 @@ if __name__ == "__main__":
     '''
     pred = -1
     horizon = 160
-    train,  valid, test = data(int(pred), relation= "3", stimulus= "2", horizon = horizon,  split = True , multivariate = True)
+    train,  valid, test = data(int(pred), input_task= "3", stimulus= "2", horizon = horizon,  split = True , multivariate = True)
     test_X, test_Y = test
     baseline = baseline(test_X, test_Y)
     '''
@@ -20,7 +20,7 @@ if __name__ == "__main__":
     
     
 
-  
+    '''
 
     true = np.load("../models/LR/True.npz")
     pred = np.load("../models/LR/predicted.npz")
@@ -49,5 +49,7 @@ if __name__ == "__main__":
 
 
     print("hello")
+
+    '''
  
     

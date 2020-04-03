@@ -29,14 +29,16 @@ horizon = os.environ["horizon"]
 if __name__ == "__main__":
     
     # Set the Training parameter to False to True whether you want training 
+
     training =  True
     model_name = model_name
+    
 
+    flag_tuning = True if model_name.endswith("hp") else False
 
 
     #No of predictions steps ahead
     horizon = int(horizon)
-
 
     #Window of the data
     window = 160
@@ -52,7 +54,7 @@ if __name__ == "__main__":
     
 
     print("The predicted value is ", pred)
-    train, valid, test = data(int(pred), input_task= input_task, stimulus= stimulus, horizon = horizon,  split = split , multivariate = multivariate)
+    train, valid, test, scaler = data(int(pred), input_task= input_task, stimulus= stimulus, horizon = horizon,  split = split , multivariate = multivariate)
 
     train_X, train_Y = train
     valid_X, valid_Y = valid
@@ -84,7 +86,6 @@ if __name__ == "__main__":
                                     patience=10, min_lr=0.00001)
             '''
 
-            flag_tuning = False   # Set the hyper param tuning if you want to tune number of layer, model etc
             
             model = get_model()[model_name]
             if model_name == "LSTM":
@@ -94,7 +95,6 @@ if __name__ == "__main__":
             elif model_name =="LR":
                 model = model(train_X.shape, learning_rate)
             else:
-                flag_tuning = True
                 model = model 
             
 
@@ -127,29 +127,15 @@ if __name__ == "__main__":
             print(model.summary())
             # Fit the model with the Data
 
-            if model_name.startswith("LSTM")  :
-                for i in tqdm(range(training_epochs)):
-                    history = model.fit(
-                        train_X, 
-                        train_Y, 
-                        batch_size = 680,
-                        epochs = 1, 
-                        validation_data = (valid_X, valid_Y), 
-                        verbose = 1,
-                        shuffle = False
-                        )
-                    model.reset_states()
-                
-
-            else:
-                history = model.fit(
-                        train_X, 
-                        train_Y, 
-                        batch_size = batch_size,
-                        epochs = training_epochs, 
-                        validation_data = (valid_X, valid_Y), 
-                        verbose = 1,
-                        )
+            
+            history = model.fit(
+                    train_X, 
+                    train_Y, 
+                    batch_size = batch_size,
+                    epochs = training_epochs, 
+                    validation_data = (valid_X, valid_Y), 
+                    verbose = 1,
+                    )
 
             if flag_tuning == False:
                 pass
@@ -164,6 +150,11 @@ if __name__ == "__main__":
     #Plot Training and Validation Loss
     plot_loss_curve(history)
 
+
+
+
+    ''''Inference stage '''
+
     if input_task == "3":  #If you are performing Forecasting
         if int(pred) == -1: #Predicting the Future time step values of all the electrodes
             if horizon > 1:
@@ -171,6 +162,9 @@ if __name__ == "__main__":
                 predictions = predict_multi_timestep(model, test_X, horizon = horizon, model_name = model_name)  #Output shape (Batch_size, horizon, features)
                 #plot_multistep_prediction(test_Y, predictions ) 
 
+                 # invert predictions
+                predictions = scaler.inverse_transform(predictions)
+                test_Y = scaler.inverse_transform(test_Y)
 
                 #Actual and Predicted values for Single electrode mutistep 
                 true_elec = test_Y[:, :, 63]
@@ -185,6 +179,11 @@ if __name__ == "__main__":
             else: 
 
                 predictions = predict_single_timestep(model, test_X)  #Output shape is (Batch_Size, n_features)
+
+                # invert predictions
+                predictions = scaler.inverse_transform(predictions)
+                test_Y = scaler.inverse_transform(test_Y)
+
                 corr = list_correlation(predictions, test_Y)           #List of r value of all the the electrodes 
 
                 print(corr)
@@ -197,6 +196,11 @@ if __name__ == "__main__":
     else: #Prediciting next time point of a single electrode or stimulus
     
         predictions = predict_single_timestep(model, test_X)
+
+         # invert predictions
+        predictions = scaler.inverse_transform(predictions)
+        test_Y = scaler.inverse_transform(test_Y)
+
         corr = compute_correlation(predictions, test_Y)
         print("The value of correlation is for electrode {} is {}". format(pred, corr))
 
