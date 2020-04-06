@@ -24,13 +24,14 @@ stimulus = os.environ["stimulus"]
 input_task = os.environ["input_task"]
 model_name = os.environ["model_name"]
 horizon = os.environ["horizon"]
+training = os.environ["training"]
 
 
 if __name__ == "__main__":
     
     # Set the Training parameter to False to True whether you want training 
 
-    training =  True
+    training =  training
     model_name = model_name
     
 
@@ -54,7 +55,7 @@ if __name__ == "__main__":
     
 
     print("The predicted value is ", pred)
-    train, valid, test, scaler = data(int(pred), input_task= input_task, stimulus= stimulus, horizon = horizon,  split = split , multivariate = multivariate)
+    train, valid, test = data(int(pred), input_task= input_task, stimulus= stimulus, horizon = horizon,  split = split , multivariate = multivariate)
 
     train_X, train_Y = train
     valid_X, valid_Y = valid
@@ -138,8 +139,7 @@ if __name__ == "__main__":
                     )
 
             if flag_tuning == False:
-                pass
-                #model.save('../models/{}/{}.h5'.format(model_name, model_name))
+                model.save('../models/{}/{}.h5'.format(model_name, model_name))
 
     else: 
 
@@ -162,9 +162,13 @@ if __name__ == "__main__":
                 predictions = predict_multi_timestep(model, test_X, horizon = horizon, model_name = model_name)  #Output shape (Batch_size, horizon, features)
                 #plot_multistep_prediction(test_Y, predictions ) 
 
+                '''
+
                  # invert predictions
                 predictions = scaler.inverse_transform(predictions)
                 test_Y = scaler.inverse_transform(test_Y)
+
+                '''
 
                 #Actual and Predicted values for Single electrode mutistep 
                 true_elec = test_Y[:, :, 63]
@@ -180,9 +184,12 @@ if __name__ == "__main__":
 
                 predictions = predict_single_timestep(model, test_X)  #Output shape is (Batch_Size, n_features)
 
+                '''
                 # invert predictions
                 predictions = scaler.inverse_transform(predictions)
                 test_Y = scaler.inverse_transform(test_Y)
+
+                '''
 
                 corr = list_correlation(predictions, test_Y)           #List of r value of all the the electrodes 
 
@@ -197,9 +204,11 @@ if __name__ == "__main__":
     
         predictions = predict_single_timestep(model, test_X)
 
+        '''
          # invert predictions
         predictions = scaler.inverse_transform(predictions)
         test_Y = scaler.inverse_transform(test_Y)
+        '''
 
         corr = compute_correlation(predictions, test_Y)
         print("The value of correlation is for electrode {} is {}". format(pred, corr))

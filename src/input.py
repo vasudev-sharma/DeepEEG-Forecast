@@ -26,9 +26,9 @@ def get_data():
   #Z score
   format_1=stats.zscore(format_1, axis=2)
 
-  format_1, scaler = preprocess_data(format_1)
+  #format_1, scaler = preprocess_data(format_1)
   #format_1 = format_1[:, :, 160:]
-  return format_1, trials, scaler
+  return format_1, trials
 
 
 
@@ -226,9 +226,9 @@ def data(pred, input_task, stimulus,  horizon,  split, multivariate):
     source_X, source_Y, window = get_info(pred, input_task, stimulus)
     
     #get data
-    data, trials, scaler = get_data()
+    data, trials = get_data()
 
-    return(split_data(data, window, trials, source_Y, source_X, horizon, split, multivariate), scaler)
+    return(split_data(data, window, trials, source_Y, source_X, horizon, split, multivariate))
 
 
 
