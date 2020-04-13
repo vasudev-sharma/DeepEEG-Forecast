@@ -198,6 +198,7 @@ if __name__ == "__main__":
             
             
             with open("corr_dat.json", "a") as write_file:
+                write_file.write("\n")
                 json.dump(corr, write_file)
     
     else: #Prediciting next time point of a single electrode or stimulus
@@ -217,6 +218,7 @@ if __name__ == "__main__":
         #Dump the values in json file
         data= {"Electrode_"+pred:corr}
         with open("corr_dat.json", "a") as write_file:
+            write_file.write("\n")
             json.dump(data, write_file)
 
         

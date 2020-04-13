@@ -231,13 +231,13 @@ def vanilla_LSTM(dim,  units, source_Y, cell_type, learning_rate):
 
     _, window, features = dim
     model = Sequential()
-
+    model.add(Input( (window, features)))
     if cell_type == "LSTM":
-        model.add(LSTM(units, input_shape = ( window, features)))
+        model.add(LSTM(units))
     elif cell_type == "RNN":
-        model.add(SimpleRNN(units), input_shape = ( window, features))
+        model.add(SimpleRNN(units))
     else:
-        model.add(GRU(units), input_shape = ( window, features))
+        model.add(GRU(units))
 
     model.add(Dense(source_Y, activation = "linear", kernel_initializer = 'normal'))
     #out = Lambda(lambda x: x * 2)(X)
