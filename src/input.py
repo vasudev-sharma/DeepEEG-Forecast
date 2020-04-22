@@ -1,5 +1,6 @@
 import numpy as np
 import scipy as sio
+import os
 import matplotlib as plt
 import numpy as np
 import scipy.io as sio
@@ -8,6 +9,7 @@ rng = np.random
 from scipy import stats
 from utils import rolling_window, preprocess_data
 
+forecasting_self = os.environ["forecasting_self"]
 
 
 def get_data():
@@ -197,7 +199,7 @@ def get_info(pred, input_task, stimulus):
         #response = input("Do you want to embed information of Stimuli as well ? ( 1 for yes or 2 for no)") 
         if stimulus == "2":
             source_Y = n_channel
-            source_X = electi
+            source_X = n_channel if forecasting_self else electi
         else: 
             source_Y = n_channel
             source_X = electi + [0] 

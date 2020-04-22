@@ -16,8 +16,7 @@ def linear_regression(dim, learning_rate):
   
 
     model = Sequential([
-    Dense( int(out_features), input_shape = (features,) ,activation = "linear", kernel_initializer = "normal" )
-                    ])
+    Dense( int(out_features), input_shape = (features,) ,activation = "linear" )])
 
      #Set up the Optimizers
     sgd = optimizers.SGD(learning_rate)
@@ -189,25 +188,27 @@ def conv_1D_cross(dim, source_Y, learning_rate):
     model = Sequential([
 
     Conv1D(input_shape = (window, features), filters = 2,  kernel_size = 5),
-       ELU(),
+    ELU(),
+    SpatialDropout1D(0.1),
     MaxPooling1D(pool_size= 2),
 
   
     
     Conv1D(filters = 4 , kernel_size = 5),
-     ELU(),
+    ELU(),
+    SpatialDropout1D(0.1),
     MaxPooling1D(pool_size= 2),
 
     
     Conv1D(filters = 4,  kernel_size = 5),
-       ELU(),
+    ELU(),
+    SpatialDropout1D(0.1),
     MaxPooling1D(pool_size= 2),
 
     
     Flatten(),
-    #out = Activation("linear")(X)
-    #X = Dense(50, activation = "relu")(X)
-    Dense(features, activation = "linear",  kernel_initializer = 'normal')
+  
+    Dense(features, activation = "linear", kernel_initializer = 'normal')
     ])
     #Set up the Optimizers
     sgd = optimizers.SGD(learning_rate)
@@ -216,11 +217,61 @@ def conv_1D_cross(dim, source_Y, learning_rate):
 
 
     #Compile the model
-    model.compile(loss = 'mse', optimizer = adam, metrics=['mse'])
+    model.compile(loss = 'mse', optimizer = sgd, metrics=['mse'])
         
     return model
 
+'''Hybrid Models'''
+def conv_lstm( dim, source_Y, learning_rate):
+   
 
+    _, window, features = dim
+
+    #Encoder CNN Part 
+
+    model = Sequential([
+
+    Conv1D(input_shape = (window, features), filters = 2,  kernel_size = 5),
+    ELU(),
+    SpatialDropout1D(0.1),
+    MaxPooling1D(pool_size= 2),
+
+
+
+    Conv1D(filters = 4 , kernel_size = 5),
+    ELU(),
+    SpatialDropout1D(0.1),
+    MaxPooling1D(pool_size= 2),
+
+
+    Conv1D(filters = 4,  kernel_size = 5),
+    ELU(),
+    SpatialDropout1D(0.1),
+    MaxPooling1D(pool_size= 2),
+
+
+    Flatten(),
+
+
+    #Decoder LSTM part
+    RepeatVector(n_outputs),
+	LSTM(200, activation='relu', return_sequences=True),
+	TimeDistributed(Dense(1)),
+
+
+
+    Dense(features, activation = "linear", kernel_initializer = 'normal')
+    ])
+    #Set up the Optimizers
+    sgd = optimizers.SGD(learning_rate)
+    adam = optimizers.Adam(lr = learning_rate)
+    rmsprop = optimizers.RMSprop(lr = learning_rate)
+
+
+    #Compile the model
+    model.compile(loss = 'mse', optimizer = sgd, metrics=['mse'])
+        
+    return model
 
 
 
@@ -318,6 +369,40 @@ def vanilla_LSTM_cross_hp(hp):
 
 
 
+def LSTM_autoencoder(dim,  units, source_Y, cell_type, learning_rate):
+    _, window, features = dim
+    model = Sequential()
+    model.add(Input( (window, features)))
+    if cell_type == "LSTM":
+        model.add(LSTM(units))
+       
+        
+    elif cell_type == "RNN":
+        model.add(SimpleRNN(units))
+    else:
+        model.add(GRU(units))
+
+    model.add(RepeatVector(160))
+    model.add(LSTM(units,  return_sequences=True))
+    model.add(TimeDistributed(Dense(1)))
+
+    #model.add(Dense(source_Y, activation = "linear"))
+    #out = Lambda(lambda x: x * 2)(X)
+    
+
+
+    #Set up the Optimizers
+    sgd = optimizers.SGD(learning_rate)
+    adam = optimizers.Adam(lr = learning_rate)
+    rmsprop = optimizers.RMSprop(lr = learning_rate)
+
+
+    #Compile the model
+    model.compile(loss = 'mse', optimizer = sgd, metrics=['mse'])
+        
+
+    return model
+
 
 
 
@@ -332,5 +417,6 @@ def get_model():
             "LSTM_cross_hp": vanilla_LSTM_cross_hp,
             "CNN_cross_hp":conv_1D_cross_hp,
             "CNN_cross":conv_1D_cross
+            "LSTM_autoencoder":LSTM_autoencoder
             }
   return MODELS

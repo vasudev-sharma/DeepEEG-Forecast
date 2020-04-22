@@ -140,15 +140,17 @@ if __name__ == "__main__":
 
             if flag_tuning == False:
                 model.save('../models/{}/{}.h5'.format(model_name, model_name))
+            
+
+            
+            #Plot Training and Validation Loss
+            plot_loss_curve(history)
+
 
     else: 
 
-        model = load_model('../models/{}/model_{}_all_channel.h5'.format(model_name, model_name))
+        model = load_model('../models/{}/best_{}_all_channel.h5'.format(model_name, model_name))
         print(model.summary())
-
-    
-    #Plot Training and Validation Loss
-    plot_loss_curve(history)
 
 
 
@@ -156,50 +158,49 @@ if __name__ == "__main__":
     ''''Inference stage '''
 
     if input_task == "3":  #If you are performing Forecasting
-        if int(pred) == -1: #Predicting the Future time step values of all the electrodes
-            if horizon > 1:
-                #Predict the Y values for the given test set
-                predictions = predict_multi_timestep(model, test_X, horizon = horizon, model_name = model_name)  #Output shape (Batch_size, horizon, features)
-                #plot_multistep_prediction(test_Y, predictions ) 
+        if horizon > 1:
+            #Predict the Y values for the given test set
+            predictions = predict_multi_timestep(model, test_X, horizon = horizon, model_name = model_name)  #Output shape (Batch_size, horizon, features)
+            #plot_multistep_prediction(test_Y, predictions ) 
 
-                '''
+            '''
 
-                 # invert predictions
-                predictions = scaler.inverse_transform(predictions)
-                test_Y = scaler.inverse_transform(test_Y)
-
-                '''
-
-                #Actual and Predicted values for Single electrode mutistep 
-                true_elec = test_Y[:, :, 63]
-                pred_elec = predictions[:, :, 63]
-
-                #R value of a single electrode for all the time steps
-                corr = list_correlation(true_elec, pred_elec)
-
-                print("The value of correlation is for electrode 63 is {}". format(corr))
-
-               
-            else: 
-
-                predictions = predict_single_timestep(model, test_X)  #Output shape is (Batch_Size, n_features)
-
-                '''
                 # invert predictions
-                predictions = scaler.inverse_transform(predictions)
-                test_Y = scaler.inverse_transform(test_Y)
+            predictions = scaler.inverse_transform(predictions)
+            test_Y = scaler.inverse_transform(test_Y)
 
-                '''
+            '''
 
-                corr = list_correlation(predictions, test_Y)           #List of r value of all the the electrodes 
+            #Actual and Predicted values for Single electrode mutistep 
+            true_elec = test_Y[:, :, 63]
+            pred_elec = predictions[:, :, 63]
 
-                print(corr)
-                    
+            #R value of a single electrode for all the time steps
+            corr = list_correlation(true_elec, pred_elec)
+
+            print("The value of correlation is for electrode 63 is {}". format(corr))
+
             
-            
-            with open("corr_dat.json", "a") as write_file:
-                write_file.write("\n")
-                json.dump(corr, write_file)
+        else: 
+
+            predictions = predict_single_timestep(model, test_X)  #Output shape is (Batch_Size, n_features)
+
+            '''
+            # invert predictions
+            predictions = scaler.inverse_transform(predictions)
+            test_Y = scaler.inverse_transform(test_Y)
+
+            '''
+
+            corr = list_correlation(predictions, test_Y)           #List of r value of all the the electrodes 
+
+            print(corr)
+                
+        
+        
+        with open("corr_dat.json", "a") as write_file:
+            write_file.write("\n")
+            json.dump(corr, write_file)
     
     else: #Prediciting next time point of a single electrode or stimulus
     

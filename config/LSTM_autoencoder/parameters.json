@@ -1,0 +1,9 @@
+{
+    "training_epochs":30,
+    "batch_size" : 1024,
+    "units" : 95,
+    "learning_rate" : 0.1,
+    "cell_type" : "LSTM"
+
+    
+}
