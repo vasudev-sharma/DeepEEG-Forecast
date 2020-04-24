@@ -221,6 +221,7 @@ def conv_1D_cross(dim, source_Y, learning_rate):
         
     return model
 
+
 '''Hybrid Models'''
 def conv_lstm( dim, source_Y, learning_rate):
    
@@ -382,9 +383,9 @@ def LSTM_autoencoder(dim,  units, source_Y, cell_type, learning_rate):
     else:
         model.add(GRU(units))
 
-    model.add(RepeatVector(160))
+    model.add(RepeatVector(window))
     model.add(LSTM(units,  return_sequences=True))
-    model.add(TimeDistributed(Dense(1)))
+    model.add(TimeDistributed(Dense(features)))
 
     #model.add(Dense(source_Y, activation = "linear"))
     #out = Lambda(lambda x: x * 2)(X)
@@ -416,7 +417,8 @@ def get_model():
             "LSTM_hp":vanilla_LSTM_hp,
             "LSTM_cross_hp": vanilla_LSTM_cross_hp,
             "CNN_cross_hp":conv_1D_cross_hp,
-            "CNN_cross":conv_1D_cross
-            "LSTM_autoencoder":LSTM_autoencoder
+            "CNN_cross":conv_1D_cross,
+            "LSTM_autoencoder":LSTM_autoencoder,
+            "conv_lstm":conv_lstm
             }
   return MODELS

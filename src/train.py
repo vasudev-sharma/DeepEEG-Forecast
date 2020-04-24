@@ -77,7 +77,7 @@ if __name__ == "__main__":
             
             units = parameters["units"]
             learning_rate = parameters["learning_rate"]
-            if(model_name == "LSTM" or model_name=="LSTM_hp"):
+            if(model_name == "LSTM" or model_name=="LSTM_hp" or model_name =="LSTM_autoencoder" or model_name=="conv_LSTM"):
                 cell_type = parameters["cell_type"]
             
 
@@ -89,7 +89,7 @@ if __name__ == "__main__":
 
             
             model = get_model()[model_name]
-            if model_name == "LSTM":
+            if model_name == "LSTM" or model_name =="LSTM_autoencoder" or model_name=="conv_LSTM":
                 model = model(train_X.shape, units, train_Y.shape[-1], cell_type, learning_rate)
             elif model_name == "CNN" or model_name =="CNN_cross":
                 model = model(train_X.shape, train_Y.shape[-1], learning_rate)
@@ -160,8 +160,9 @@ if __name__ == "__main__":
     if input_task == "3":  #If you are performing Forecasting
         if horizon > 1:
             #Predict the Y values for the given test set
-            predictions = predict_multi_timestep(model, test_X, horizon = horizon, model_name = model_name)  #Output shape (Batch_size, horizon, features)
+            #predictions = predict_multi_timestep(model, test_X, horizon = horizon, model_name = model_name)  #Output shape (Batch_size, horizon, features)
             #plot_multistep_prediction(test_Y, predictions ) 
+            predictions = predict_single_timestep(model, test_X)
 
             '''
 
