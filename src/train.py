@@ -139,8 +139,10 @@ if __name__ == "__main__":
                     )
 
             if flag_tuning == False:
+                 
+                if(not path.exists("../models/{}".format(model_name))):
+                    os.mkdir("../models/{}".format(model_name))
                 model.save('../models/{}/{}.h5'.format(model_name, model_name))
-            
 
             
             #Plot Training and Validation Loss
@@ -180,8 +182,8 @@ if __name__ == "__main__":
             '''
 
             #Actual and Predicted values for Single electrode mutistep 
-            true_elec = test_Y[:, :, 63]
-            pred_elec = predictions[:, :, 63]
+            true_elec = test_Y[:, :, 0]
+            pred_elec = predictions[:, :, 0]
 
             #R value of a single electrode for all the time steps
             corr = list_correlation(true_elec, pred_elec)

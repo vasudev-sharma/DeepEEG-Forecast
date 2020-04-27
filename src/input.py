@@ -191,7 +191,7 @@ def get_info(pred, input_task, stimulus):
         print(electi)
 
         if len(electi)!= 64:
-          n_channel = pred  
+          n_channel = [pred]  
         else:
           n_channel = electi
           print("The value of channel to be predicted is ", n_channel)
