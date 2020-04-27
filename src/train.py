@@ -149,7 +149,7 @@ if __name__ == "__main__":
 
     else: 
 
-        model = load_model('../models/{}/best_{}_all_channel.h5'.format(model_name, model_name))
+        model = load_model('../models/{}/{}.h5'.format(model_name, model_name))
         print(model.summary())
 
 
@@ -159,10 +159,17 @@ if __name__ == "__main__":
 
     if input_task == "3":  #If you are performing Forecasting
         if horizon > 1:
-            #Predict the Y values for the given test set
-            #predictions = predict_multi_timestep(model, test_X, horizon = horizon, model_name = model_name)  #Output shape (Batch_size, horizon, features)
+            
             #plot_multistep_prediction(test_Y, predictions ) 
-            predictions = predict_single_timestep(model, test_X)
+            #
+
+            if model_name == "conv_LSTM" or model_name == "LSTM_autoencoder":
+                predictions = predict_single_timestep(model, test_X)
+            else:
+                #Predict the Y values for the given test set
+                predictions = predict_multi_timestep(model, test_X, horizon = horizon, model_name = model_name)  #Output shape (Batch_size, horizon, features)
+
+                
 
             '''
 
