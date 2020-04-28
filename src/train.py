@@ -140,7 +140,7 @@ if __name__ == "__main__":
 
             if flag_tuning == False:
                  
-                if(not path.exists("../models/{}".format(model_name))):
+                if(not os.path.exists("../models/{}".format(model_name))):
                     os.mkdir("../models/{}".format(model_name))
                 model.save('../models/{}/{}.h5'.format(model_name, model_name))
 
@@ -151,7 +151,7 @@ if __name__ == "__main__":
 
     else: 
 
-        model = load_model('../models/{}/{}.h5'.format(model_name, model_name))
+        model = load_model('../models/{}/LSTM_filtered_best.h5'.format(model_name, model_name))
         print(model.summary())
 
 

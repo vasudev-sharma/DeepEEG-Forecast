@@ -152,7 +152,7 @@ def plot_multistep_prediction(true, pred):
 
     
 
-def compare_plot_multistep_prediction(true, pred, true1, pred1, baseline):
+def compare_plot_multistep_prediction(array, model_names, baseline):
     
     '''
     Plot multistep prediction after n horizon timesteps for all channels
@@ -167,50 +167,55 @@ def compare_plot_multistep_prediction(true, pred, true1, pred1, baseline):
      'P10', 'PO8','PO4','O2']
 
     time = np.arange(0, 1, 1 / 160)
-    l_avg = []
-    k_avg = []
+    list_correlation_avg = []
     baseline_avg = []
-    for j in range(true.shape[-1]):
-        true_elec = true[:, :, j]
-        pred_elec = pred[:, :, j]
+ 
+    for j in range(64):
+       
         baseline_elec = baseline[:,j]
 
-        true_elec1 = true1[:, :, j]
-        pred_elec1 = pred1[:, :, j]
+    
 
 
-        l = []
-        k = []
-        for i in range(160):
-            l.append(compute_correlation(true_elec[:,i], pred_elec[:, i]))
-            k.append(compute_correlation(true_elec1[:,i], pred_elec1[:, i]))
+        list_correlation_model = []
+        for k in range(len(array)):
+            list_correlation = []
+
+            true_elec = array[k][0][:, :, j]
+            pred_elec =array[k][1][:, :, j]  
+            for i in range(160):
+
+                list_correlation.append(compute_correlation(true_elec[:,i], pred_elec[:, i]))
+            list_correlation_model.append(list_correlation)
+
 
         name = "Channel_{}:-{}".format(j+1, ch_names[j+1])
         plt.xlabel('time points')
         plt.ylabel('r value')
 
-        plt.plot(time, np.array(l), label = name + ' LR Prediction')
-        plt.plot(time, np.array(k), label = name+ ' LSTM Prediction')
+        print(len(list_correlation_model))
+        print(len(list_correlation_model[0]))
+
+        for i in range(len(model_names)):
+            plt.plot(time, np.array(list_correlation_model[i]), label = name + ' '+ model_names[i])
         plt.plot(time, baseline_elec, label = name+ ' Baseline')
 
-        l_avg.append(np.array(l))
-        k_avg.append(np.array(k))
+
         baseline_avg.append(baseline_elec)
+        list_correlation_avg.append(list_correlation_model)
 
 
         plt.legend(loc="upper right")
         plt.savefig("../images/"+name+".png")
         plt.figure()
-    
+        
     plt.xlabel('time points')
     plt.ylabel('r value ')
-    print(np.array(l_avg).shape)
-    print(np.array(k_avg).shape)
+ 
     print(np.array(baseline_avg).shape)
 
-
-    plt.plot(time, np.array(l_avg).mean(axis = 0), label = ' LR Prediction')
-    plt.plot(time, np.array(k_avg).mean(axis = 0), label =' LSTM Prediction')
+    for i in range(len(model_names)):
+        plt.plot(time, np.array(list_correlation_avg)[:,i,:].mean(axis = 0), label = ' ' + model_names[i])
     plt.plot(time, np.array(baseline_avg).mean(axis = 0), label =' Baseline')
 
     plt.legend(loc="upper right")

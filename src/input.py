@@ -117,20 +117,20 @@ def split_data(data, window, trials, source_Y, source_X, horizon, split, multiva
 
 
     #Extract Y
-    y_train = extract_Y (data, window,  source_Y, trials_train, horizon = horizon, multivariate = multivariate)
+    y_train = extract_Y (data, window,  source_Y, trials_train, horizon = 1, multivariate = False)
     print ("y_train.shape = ", y_train.shape)
 
-    y_valid = extract_Y (data, window, source_Y, trials_valid, horizon  = horizon, multivariate= multivariate)
+    y_valid = extract_Y (data, window, source_Y, trials_valid, horizon  = 1, multivariate= False)
     print ("y_valid.shape = ", y_valid.shape)
 
     y_test = extract_Y (data, window, source_Y, trials_test, horizon = horizon, multivariate= multivariate)
     print ("y_test.shape = ", y_test.shape)
 
     #Extract X
-    x_train = extract_X (data, window, source_X, trials_train,  horizon  = horizon,   split = split)
+    x_train = extract_X (data, window, source_X, trials_train,  horizon  = 1,   split = split)
     print ("x_train.shape = ", x_train.shape)
 
-    x_valid = extract_X (data, window, source_X, trials_valid, horizon = horizon , split = split)
+    x_valid = extract_X (data, window, source_X, trials_valid, horizon = 1 , split = split)
     print ("x_valid.shape = ", x_valid.shape)
 
     x_test = extract_X (data, window, source_X, trials_test, horizon = horizon, split = split)

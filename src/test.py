@@ -18,38 +18,30 @@ if __name__ == "__main__":
     
     
     
-    
+    model_names = ["LR", "GRU"]
+    array_models = []
+    for i in range(len(model_names)):
+        true = np.load("../models/{}/True.npz".format(model_names[i]))
+        pred = np.load("../models/{}/predicted.npz".format(model_names[i]))
+        print("Name of the model is ", model_names[i])
+        print("Shape of the actual test set is - ", true['arr_0'].shape)
+        print("Shape of the predicted test set is - ", pred['arr_0'].shape)
+        array_models.append((true['arr_0'],pred['arr_0']))
 
-    '''
-
-    true = np.load("../models/LR/True.npz")
-    pred = np.load("../models/LR/predicted.npz")
-
-    
-    true1 = np.load("../models/LSTM/True.npz")
-    pred1 = np.load("../models/LSTM/predicted.npz")
 
     baseline = np.load('../models/baseline/baseline_all_channels.npz')
 
 
 
-    print("LR model")
-    print("Shape of the actual test set is - ", true['arr_0'].shape)
-    print("Shape of the predicted test set is - ", pred['arr_0'].shape)
-
-    
-    print("LSTM model")
-    print("Shape of the actual test set is - ", true1['arr_0'].shape)
-    print("Shape of the predicted test set is - ", pred1['arr_0'].shape)
 
     print("Baseline")
     print("Shape of Baseline model is - ", baseline['arr_0'].shape)
     
-    compare_plot_multistep_prediction(true['arr_0'], pred['arr_0'], true1['arr_0'], pred1['arr_0'], baseline['arr_0'])
+    compare_plot_multistep_prediction(array_models, model_names, baseline['arr_0'])
 
 
     print("hello")
 
-    '''
+
  
     

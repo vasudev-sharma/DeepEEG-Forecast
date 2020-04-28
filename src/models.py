@@ -291,7 +291,7 @@ def vanilla_LSTM(dim,  units, source_Y, cell_type, learning_rate):
     else:
         model.add(GRU(units))
 
-    model.add(Dense(source_Y, activation = "linear", kernel_initializer = 'normal'))
+    model.add(Dense(features, activation = "linear"))
     #out = Lambda(lambda x: x * 2)(X)
     
 
