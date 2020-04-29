@@ -10,6 +10,7 @@ from scipy import stats
 from utils import rolling_window, preprocess_data
 
 forecasting_self = os.environ["forecasting_self"]
+MIMO_output = os.environ["MIMO_output"]
 
 
 def get_data():
@@ -116,25 +117,49 @@ def split_data(data, window, trials, source_Y, source_X, horizon, split, multiva
             86, 129,  35, 104,   5,  17])
 
 
-    #Extract Y
-    y_train = extract_Y (data, window,  source_Y, trials_train, horizon = 1, multivariate = False)
-    print ("y_train.shape = ", y_train.shape)
+    if MIMO_output:
 
-    y_valid = extract_Y (data, window, source_Y, trials_valid, horizon  = 1, multivariate= False)
-    print ("y_valid.shape = ", y_valid.shape)
+      #Extract Y
+      y_train = extract_Y (data, window,  source_Y, trials_train, horizon = horizon, multivariate = multivariate)
+      print ("y_train.shape = ", y_train.shape)
 
-    y_test = extract_Y (data, window, source_Y, trials_test, horizon = horizon, multivariate= multivariate)
-    print ("y_test.shape = ", y_test.shape)
+      y_valid = extract_Y (data, window, source_Y, trials_valid, horizon  = horizon, multivariate= multivariate)
+      print ("y_valid.shape = ", y_valid.shape)
 
-    #Extract X
-    x_train = extract_X (data, window, source_X, trials_train,  horizon  = 1,   split = split)
-    print ("x_train.shape = ", x_train.shape)
+      y_test = extract_Y (data, window, source_Y, trials_test, horizon = horizon, multivariate= multivariate)
+      print ("y_test.shape = ", y_test.shape)
 
-    x_valid = extract_X (data, window, source_X, trials_valid, horizon = 1 , split = split)
-    print ("x_valid.shape = ", x_valid.shape)
+      #Extract X
+      x_train = extract_X (data, window, source_X, trials_train,  horizon  = horizon,   split = split)
+      print ("x_train.shape = ", x_train.shape)
 
-    x_test = extract_X (data, window, source_X, trials_test, horizon = horizon, split = split)
-    print ("x_test.shape = ", x_test.shape)
+      x_valid = extract_X (data, window, source_X, trials_valid, horizon = horizon , split = split)
+      print ("x_valid.shape = ", x_valid.shape)
+
+      x_test = extract_X (data, window, source_X, trials_test, horizon = horizon, split = split)
+      print ("x_test.shape = ", x_test.shape)
+    
+    else: 
+      #Extract Y
+      y_train = extract_Y (data, window,  source_Y, trials_train, horizon = 1, multivariate = False)
+      print ("y_train.shape = ", y_train.shape)
+
+      y_valid = extract_Y (data, window, source_Y, trials_valid, horizon  = 1, multivariate= False)
+      print ("y_valid.shape = ", y_valid.shape)
+
+      y_test = extract_Y (data, window, source_Y, trials_test, horizon = horizon, multivariate= multivariate)
+      print ("y_test.shape = ", y_test.shape)
+
+      #Extract X
+      x_train = extract_X (data, window, source_X, trials_train,  horizon  = 1,   split = split)
+      print ("x_train.shape = ", x_train.shape)
+
+      x_valid = extract_X (data, window, source_X, trials_valid, horizon = 1 , split = split)
+      print ("x_valid.shape = ", x_valid.shape)
+
+      x_test = extract_X (data, window, source_X, trials_test, horizon = horizon, split = split)
+      print ("x_test.shape = ", x_test.shape)
+
 
   
 

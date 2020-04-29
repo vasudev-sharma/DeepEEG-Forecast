@@ -3,6 +3,7 @@ import json
 from tensorflow.keras import optimizers
 from input import data
 from tensorflow.keras.models import load_model
+from tensorflow.keras.utils import plot_model
 from predict import predict_single_timestep, predict_multi_timestep
 from models import get_model
 from metrics import compute_correlation, list_correlation
@@ -152,6 +153,7 @@ if __name__ == "__main__":
     else: 
 
         model = load_model('../models/{}/LSTM_filtered_best.h5'.format(model_name, model_name))
+        plot_model(model, "{}_model.png".format(model_name), True, True)
         print(model.summary())
 
 
