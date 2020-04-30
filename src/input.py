@@ -11,6 +11,7 @@ from utils import rolling_window, preprocess_data
 
 forecasting_self = os.environ["forecasting_self"]
 MIMO_output = os.environ["MIMO_output"]
+model_name = os.environ["model_name"]
 
 
 def get_data():
@@ -160,11 +161,19 @@ def split_data(data, window, trials, source_Y, source_X, horizon, split, multiva
       x_test = extract_X (data, window, source_X, trials_test, horizon = horizon, split = split)
       print ("x_test.shape = ", x_test.shape)
 
-
   
 
     return (x_train, y_train), (x_valid, y_valid), (x_test, y_test)
 
+def teacher_forcing(encoder_input_data, decoder_target_data ):
+  # lagged target series for teacher forcing
+  # i.e, during training, the true series values (lagged by one time step) are fed as inputs to the decoder.
+  # Intuitively, we are trying to teach the NN how to condition on previous time steps to predict the next.
+  # At prediction time, the true values in this process will be replaced by predicted values for each previous time step.
+  decoder_input_data = np.zeros((decoder_target_data.shape[0], decoder_target_data.shape[1], encoder_input_data.shape[2]))
+  decoder_input_data[:, 1:, :] = decoder_target_data[:, :-1, :]  # target = input shifted by one
+  decoder_input_data[:, 0, :] = encoder_input_data[:, -1, :]
+  return encoder_input_data,decoder_input_data, decoder_target_data
 
 
 def split_trials(trials):

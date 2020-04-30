@@ -59,8 +59,7 @@ def predict_autoencoder(encoder_model, decoder_model, encoder_inputs):
     Multi step Inference (1 at a time)
     :param encoder_inputs: numpy.array
         Encoder input: shape(n_samples, input_sequnece_length, n_features)
-    :param pred_steps: int
-        number of steps to be predicted in the future
+
  
     :return: numpy.array
         shape(n_samples, output_sequence_length, features)
@@ -83,6 +82,7 @@ def predict_autoencoder(encoder_model, decoder_model, encoder_inputs):
         
 
         if isinstance(states_value, list):
+            print("HI")
             outputs = decoder_model.predict([decoder_input] + states_value)
         else:
             outputs = decoder_model.predict([decoder_input, states_value])

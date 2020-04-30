@@ -1,11 +1,11 @@
 import os
 import json
 from tensorflow.keras import optimizers
-from input import data
+from input import data, teacher_forcing
 from tensorflow.keras.models import load_model
 from tensorflow.keras.utils import plot_model
-from predict import predict_single_timestep, predict_multi_timestep
-from models import get_model
+from predict import predict_single_timestep, predict_multi_timestep, predict_autoencoder
+from models import get_model, build_prediction_model
 from metrics import compute_correlation, list_correlation
 from tensorflow.keras.callbacks import ReduceLROnPlateau
 from utils import plot_multistep_prediction, plot_loss_curve
@@ -60,7 +60,21 @@ if __name__ == "__main__":
 
     train_X, train_Y = train
     valid_X, valid_Y = valid
-    test_X, test_Y = test
+    test_X, test_Y = test        
+
+    if model_name == "LSTM_autoencoder":
+      encoder_input_train, decoder_input_train, decoder_target_train = teacher_forcing(train_X, train_Y)
+      encoder_input_valid, decoder_input_valid,  decoder_target_valid = teacher_forcing(valid_X, valid_Y)
+      encoder_input_test, decoder_input_test,  decoder_target_test = teacher_forcing(test_X, test_Y)
+      input_train = [encoder_input_train, decoder_input_train]
+      input_valid = [encoder_input_valid, decoder_input_valid]
+      output_train = decoder_target_train
+      output_valid = decoder_target_valid
+
+      print("Shape of encoder_input_train, decoder_input_train, decoder_target_train is  ",  encoder_input_train.shape, decoder_input_train.shape, decoder_target_train.shape)
+      print("Shape of encoder_input_valid, decoder_input_valid,  decoder_target_valid is ", encoder_input_valid.shape, decoder_input_valid.shape,  decoder_target_valid.shape)  
+     
+
 
     
     if training: 
@@ -91,7 +105,7 @@ if __name__ == "__main__":
             
             model = get_model()[model_name]
             if model_name == "LSTM" or model_name =="LSTM_autoencoder" or model_name=="conv_LSTM":
-                model = model(train_X.shape, units, train_Y.shape[-1], cell_type, learning_rate)
+                model, encoder_model, decoder_model = model(train_X.shape, units, train_Y.shape[-1], cell_type, learning_rate)
             elif model_name == "CNN" or model_name =="CNN_cross":
                 model = model(train_X.shape, train_Y.shape[-1], learning_rate)
             elif model_name =="LR":
@@ -127,36 +141,33 @@ if __name__ == "__main__":
 
 
             print(model.summary())
+            # Fit the model with the Data
             plot_model(model, "{}_model.png".format(model_name), True, True)
 
-            # Fit the model with the Data
 
             
             history = model.fit(
-                    train_X, 
-                    [train_X, train_Y], 
+                    input_train, 
+                    output_train, 
                     batch_size = batch_size,
                     epochs = training_epochs, 
-                    validation_data = (valid_X, [valid_X, valid_Y]), 
+                    validation_data = (input_valid, output_valid), 
                     verbose = 1,
                     )
 
             if flag_tuning == False:
-                 
-                if(not os.path.exists("../models/{}".format(model_name))):
-                    os.mkdir("../models/{}".format(model_name))
                 model.save('../models/{}/{}.h5'.format(model_name, model_name))
-
-            
-            #Plot Training and Validation Loss
-            plot_loss_curve(history)
-
 
     else: 
 
-        model = load_model('../models/{}/{}.h5'.format(model_name, model_name))
+        model = load_model('../models/{}/model_{}_all_channel.h5'.format(model_name, model_name))
         plot_model(model, "{}_model.png".format(model_name), True, True)
+
         print(model.summary())
+
+    
+    #Plot Training and Validation Loss
+    plot_loss_curve(history)
 
 
 
@@ -165,18 +176,19 @@ if __name__ == "__main__":
 
     if input_task == "3":  #If you are performing Forecasting
         if horizon > 1:
-            
-            #plot_multistep_prediction(test_Y, predictions ) 
-            #
+            #Predict the Y values for the given test set
+            #predictions = predict_multi_timestep(model, test_X, horizon = horizon, model_name = model_name)  #Output shape (Batch_size, horizon, features)
+            #plot_multistep_prediction(test_Y, predictions )
 
-            if model_name == "conv_LSTM" or model_name == "LSTM_autoencoder":
-                predictions = predict_single_timestep(model, test_X)
-            else:
-                #Predict the Y values for the given test set
-                predictions = predict_multi_timestep(model, test_X, horizon = horizon, model_name = model_name)  #Output shape (Batch_size, horizon, features)
 
-                
+            #LSTM AUTOENCODER Predictor
+            decoder_model = build_prediction_model((1, 1), units, cell_type)
+            print(decoder_model.summary)
+            predictions = predict_autoencoder(encoder_model, decoder_model, encoder_input_test)
 
+            print("Hi")
+
+           
             '''
 
                 # invert predictions
