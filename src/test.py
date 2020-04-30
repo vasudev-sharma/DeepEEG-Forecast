@@ -1,5 +1,4 @@
 from utils import plot_multistep_prediction, compare_plot_multistep_prediction
-from input import data
 from metrics import list_correlation
 from tqdm import tqdm
 from predict import baseline
@@ -18,7 +17,7 @@ if __name__ == "__main__":
     
     
     
-    model_names = ["LR", "GRU"]
+    model_names = ["LR", "GRU", "RNN", "LSTM", "LSTM_autoencoder"]
     array_models = []
     for i in range(len(model_names)):
         true = np.load("../models/{}/True.npz".format(model_names[i]))
