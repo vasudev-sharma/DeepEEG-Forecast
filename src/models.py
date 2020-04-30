@@ -372,8 +372,25 @@ def vanilla_LSTM_cross_hp(hp):
 
 def LSTM_autoencoder(dim,  units, source_Y, cell_type, learning_rate):
     _, window, features = dim
-    model = Sequential()
+   
     
+
+    # define encoder
+    visible = Input(shape=(window,features))
+    encoder = LSTM(units)(visible)
+    # define reconstruct decoder
+    decoder1 = RepeatVector(window)(encoder)
+    decoder1 = LSTM(units, return_sequences=True)(decoder1)
+    decoder1 = TimeDistributed(Dense(features))(decoder1)
+
+    # define predict decoder
+    decoder2 = RepeatVector(window)(encoder)
+    decoder2 = LSTM(units, return_sequences=True)(decoder2)
+    decoder2 = TimeDistributed(Dense(features))(decoder2)
+    # tie it together
+    model = Model(inputs=visible, outputs=[decoder1, decoder2])
+
+
 
     '''
     model.add(Input( (window, features)))
@@ -392,7 +409,7 @@ def LSTM_autoencoder(dim,  units, source_Y, cell_type, learning_rate):
 
     #model.add(Dense(source_Y, activation = "linear"))
     #out = Lambda(lambda x: x * 2)(X)
-    
+    '''
 
 
     #Set up the Optimizers
@@ -406,54 +423,89 @@ def LSTM_autoencoder(dim,  units, source_Y, cell_type, learning_rate):
         
 
     return model
+    
+
+    encoder_inputs = Input(shape=(window, features), name='encoder_inputs')
+    decoder_inputs = Input(shape==(window, features), name='decoder_inputs')
+
+    encoder = LSTM(n_units, return_state=True)
+    decoder = LSTM(n_units, return_sequences=True, return_state=True)
+    decoder_dense = Dense(features)
+
+    encoder_outputs, state_h, state_c = encoder(encoder_inputs)
+	encoder_states = [state_h, state_c]
+
+    # define inference encoder
+	encoder_model = Model(encoder_inputs, encoder_states)
+    encoder_states = format_encoder_states(cell_type, encoder_states, use_first=False)
+
+    # define training decoder
+    decoder_outputs, _, _ = decoder(decoder_inputs, initial_state=encoder_states)
+    decoder_dense = Dense(features)
+	decoder_outputs = decoder_dense(decoder_outputs)
+    model = Model([encoder_inputs, decoder_inputs], decoder_outputs, name='train_model')
+
+
+
+    '''
+    
+    # define training encoder
+    encoder_inputs = Input(shape=(window, features), name='encoder_inputs')
+    encoder = LSTM(n_units, return_state=True)
+	encoder_outputs, state_h, state_c = encoder(encoder_inputs)
+	encoder_states = [state_h, state_c]
+	decoder_inputs = Input(shape=shape=(window, features))
+	decoder_lstm = LSTM(n_units, return_sequences=True, return_state=True)
+	decoder_outputs, _, _ = decoder_lstm(decoder_inputs, initial_state=encoder_states)
+	decoder_dense = Dense(features)
+	decoder_outputs = decoder_dense(decoder_outputs)
+	model = Model([encoder_inputs, decoder_inputs], decoder_outputs)
     '''
 
-    encoder_inputs = Input(shape=encoder_inputs, name='encoder_inputs')
-    decoder_inputs = Input(shape=decoder_inputs, name='decoder_inputs')
+	# define inference encoder
+	encoder_model = Model(encoder_inputs, encoder_states)
+	# define inference decoder
+	decoder_state_input_h = Input(shape=(n_units,))
+	decoder_state_input_c = Input(shape=(n_units,))
+	decoder_states_inputs = [decoder_state_input_h, decoder_state_input_c]
+	decoder_outputs, state_h, state_c = decoder_lstm(decoder_inputs, initial_state=decoder_states_inputs)
+	decoder_states = [state_h, state_c]
+	decoder_outputs = decoder_dense(decoder_outputs)
+	decoder_model = Model([decoder_inputs] + decoder_states_inputs, [decoder_outputs] + decoder_states, name='pred_model')
+	# return all models
+	return model, encoder_model, decoder_model
+    
 
-
-
-def predict(encoder_model, decoder_model, encoder_inputs, pred_steps):
-    """
-    Multi step Inference (1 at a time)
-    :param encoder_inputs: numpy.array
-        Encoder input: shape(n_samples, input_sequnece_length, n_features)
-    :param pred_steps: int
-        number of steps to be predicted in the future
- 
-    :return: numpy.array
-        shape(n_samples, output_sequence_length, 1)
-    """
-    # predictions, shape (batch_size, pred_steps, 1)
-    predictions = np.zeros((encoder_inputs.shape[0], pred_steps, 1))
-
-    # produce embeddings with encoder
-    states_value = encoder_model.predict(encoder_inputs)  # [h,c](lstm) or [h](gru) each of dim (batch_size, n_hidden)
-
-    # populate the decoder input with the last encoder input
-    decoder_input = np.zeros((encoder_inputs.shape[0], 1, encoder_inputs.shape[-1]))  # decoder input for a single timestep
-    decoder_input[:, 0, 0] = encoder_inputs[:, -1, 0]
-
-    for i in range(pred_steps):
-        
-
-        if isinstance(states_value, list):
-            outputs = decoder_pred.predict([decoder_input] + states_value)
-        else:
-            outputs = decoder_pred.predict([decoder_input, states_value])
-
-        # prediction at timestep i
-        output = outputs[0]  # output (batch_size, 1, 1)
-        predictions[:, i, 0] = output[:, 0, 0]
-
-        # Update the decoder input with the predicted value (of length 1).
-        decoder_input = np.zeros((encoder_inputs.shape[0], 1, encoder_inputs.shape[-1]))
-        decoder_input[:, 0, 0] = output[:, 0, 0]
-
-        # Update states
-        states_value = outputs[1:] # h, c (both [batch_size, n_hidden]) or just h
-
-    return predictions
+ def format_encoder_states(cell_type, encoder_states, use_first=True):
+        """
+        Format the encoder states in such a way that only the last state from the first layer of the encoder
+        is used to init the first layer of the decoder.
+        If the cell type used is LSTM then both c and h are kept.
+        :param encoder_states: Keras.tensor
+            (last) hidden state of the decoder
+        :param use_first: bool
+            if True use only the last hidden state from first layer of the encoder, while the other are init to zero.
+            if False use last hidden state for all layers
+        :return:
+            masked encoder states
+        """
+        if use_first:
+            # Keras version 2.1.4 has encoder states reversed w.r.t later versions
+            if keras.__version__ < '2.2':
+                if cell_type == 'lstm':
+                    encoder_states = [Lambda(lambda x: K.zeros_like(x))(s) for s in encoder_states[:-2]] + [
+                        encoder_states[-2]]
+                else:
+                    encoder_states = [Lambda(lambda x: K.zeros_like(x))(s) for s in encoder_states[:-1]] + [
+                        encoder_states[-1]]
+            else:
+                if cell_type == 'lstm':
+                    encoder_states = encoder_states[:2] + [Lambda(lambda x: K.zeros_like(x))(s) for s in
+                                                                encoder_states[2:]]
+                else:
+                    encoder_states = encoder_states[:1] + [Lambda(lambda x: K.zeros_like(x))(s) for s in
+                                                                encoder_states[1:]]
+        return encoder_states
 
 
 

@@ -127,15 +127,17 @@ if __name__ == "__main__":
 
 
             print(model.summary())
+            plot_model(model, "{}_model.png".format(model_name), True, True)
+
             # Fit the model with the Data
 
             
             history = model.fit(
                     train_X, 
-                    train_Y, 
+                    [train_X, train_Y], 
                     batch_size = batch_size,
                     epochs = training_epochs, 
-                    validation_data = (valid_X, valid_Y), 
+                    validation_data = (valid_X, [valid_X, valid_Y]), 
                     verbose = 1,
                     )
 
