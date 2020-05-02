@@ -78,11 +78,10 @@ def predict_autoencoder(encoder_model, decoder_model, encoder_inputs):
     decoder_input = np.zeros((encoder_inputs.shape[0], 1, encoder_inputs.shape[-1]))  # decoder input for a single timestep
     decoder_input[:, 0, 0] = encoder_inputs[:, -1, 0]
 
-    for i in range(horizon):
+    for i in tqdm(range(horizon)):
         
 
         if isinstance(states_value, list):
-            print("HI")
             outputs = decoder_model.predict([decoder_input] + states_value)
         else:
             outputs = decoder_model.predict([decoder_input, states_value])

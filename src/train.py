@@ -104,7 +104,9 @@ if __name__ == "__main__":
 
             
             model = get_model()[model_name]
-            if model_name == "LSTM" or model_name =="LSTM_autoencoder" or model_name=="conv_LSTM":
+            if model_name == "LSTM" or model_name=="conv_LSTM":
+                model = model(train_X.shape, units, train_Y.shape[-1], cell_type, learning_rate)
+            elif model_name =="LSTM_autoencoder":
                 model, encoder_model, decoder_model = model(train_X.shape, units, train_Y.shape[-1], cell_type, learning_rate)
             elif model_name == "CNN" or model_name =="CNN_cross":
                 model = model(train_X.shape, train_Y.shape[-1], learning_rate)
@@ -145,15 +147,25 @@ if __name__ == "__main__":
             plot_model(model, "{}_model.png".format(model_name), True, True)
 
 
-            
-            history = model.fit(
-                    input_train, 
-                    output_train, 
-                    batch_size = batch_size,
-                    epochs = training_epochs, 
-                    validation_data = (input_valid, output_valid), 
-                    verbose = 1,
-                    )
+
+            if model_name == "LSTM_autoencoder":
+                history = model.fit(
+                        input_train, 
+                        output_train, 
+                        batch_size = batch_size,
+                        epochs = training_epochs, 
+                        validation_data = (input_valid, output_valid), 
+                        verbose = 1,
+                        )
+            else:
+                history = model.fit(
+                        train_X, 
+                        train_Y, 
+                        batch_size = batch_size,
+                        epochs = training_epochs, 
+                        validation_data = (valid_X, valid_Y), 
+                        verbose = 1,
+                        )
 
             if flag_tuning == False:
                 model.save('../models/{}/{}.h5'.format(model_name, model_name))
@@ -182,11 +194,10 @@ if __name__ == "__main__":
 
 
             #LSTM AUTOENCODER Predictor
-            decoder_model = build_prediction_model((1, 1), units, cell_type)
-            print(decoder_model.summary)
+            decoder_model = build_prediction_model((1, train_Y.shape[-1]), units, cell_type)
             predictions = predict_autoencoder(encoder_model, decoder_model, encoder_input_test)
 
-            print("Hi")
+    
 
            
             '''

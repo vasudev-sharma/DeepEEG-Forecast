@@ -3,7 +3,7 @@ from tensorflow.keras.layers import *
 from tensorflow.keras.models import Model, Sequential
 from tensorflow.keras import initializers
 from tensorflow.keras import optimizers
-import keras
+import tensorflow.keras
 
 
 '''Linear Regression Models'''
@@ -437,7 +437,6 @@ def LSTM_autoencoder(dim,  units, source_Y, cell_type, learning_rate):
 
     encoder_outputs, state_h, state_c = encoder(encoder_inputs)
     encoder_states = [state_h, state_c]
-    print(encoder_states)
 
     # define inference encoder
     encoder_model = Model(encoder_inputs, encoder_states)
@@ -454,7 +453,6 @@ def LSTM_autoencoder(dim,  units, source_Y, cell_type, learning_rate):
 
     # define inference encoder
     encoder_model = Model(encoder_inputs, encoder_states)
-    print(encoder_model.summary())
     # define inference decoder
     decoder_state_input_h = Input(shape=(units,))
     decoder_state_input_c = Input(shape=(units,))
@@ -463,7 +461,6 @@ def LSTM_autoencoder(dim,  units, source_Y, cell_type, learning_rate):
     decoder_states = [state_h, state_c]
     decoder_outputs = decoder_dense(decoder_outputs)
     decoder_model = Model([decoder_inputs] + decoder_states_inputs, [decoder_outputs] + decoder_states, name='pred_model')
-    print(decoder_model.summary())
 
     #Set up the Optimizers
     sgd = optimizers.SGD(learning_rate)
@@ -493,7 +490,7 @@ def get_decoder_initial_states(units, cell_type):
         decoder_state_input_c = Input(shape=(units,))
         input_states = [decoder_state_input_h, decoder_state_input_c]
     decoder_states_inputs.extend(input_states)
-    if keras.__version__ < '2.2':
+    if tensorflow.keras.__version__ < '2.2':
         return list(reversed(decoder_states_inputs))
     else:
         return decoder_states_inputs
@@ -537,7 +534,7 @@ def format_encoder_states(cell_type, encoder_states, use_first=True):
     Format the encoder states in such a way that only the last state from the first layer of the encoder
     is used to init the first layer of the decoder.
     If the cell type used is LSTM then both c and h are kept.
-    :param encoder_states: Keras.tensor
+    :param encoder_states: tensorflow.keras.tensor
         (last) hidden state of the decoder
     :param use_first: bool
         if True use only the last hidden state from first layer of the encoder, while the other are init to zero.
@@ -546,20 +543,21 @@ def format_encoder_states(cell_type, encoder_states, use_first=True):
         masked encoder states
     """
     if use_first:
-        # Keras version 2.1.4 has encoder states reversed w.r.t later versions
-        if keras.__version__ < '2.2':
-            if cell_type == 'lstm':
-                encoder_states = [Lambda(lambda x: K.zeros_like(x))(s) for s in encoder_states[:-2]] + [
+        # tensorflow.keras version 2.1.4 has encoder states reversed w.r.t later versions
+        if tensorflow.keras.__version__ < '2.2':
+            if cell_type == 'LSTM':
+                encoder_states = [Lambda(lambda x: tensorflow.keras.zeros_like(x))(s) for s in encoder_states[:-2]] + [
                     encoder_states[-2]]
             else:
-                encoder_states = [Lambda(lambda x: K.zeros_like(x))(s) for s in encoder_states[:-1]] + [
+                encoder_states = [Lambda(lambda x: tensorflow.keras.zeros_like(x))(s) for s in encoder_states[:-1]] + [
                     encoder_states[-1]]
         else:
-            if cell_type == 'lstm':
-                encoder_states = encoder_states[:2] + [Lambda(lambda x: K.zeros_like(x))(s) for s in
+            if cell_type == 'LSTM':
+                print("Fuck OFF")
+                encoder_states = encoder_states[:2] + [Lambda(lambda x: tensorflow.keras.zeros_like(x))(s) for s in
                                                             encoder_states[2:]]
             else:
-                encoder_states = encoder_states[:1] + [Lambda(lambda x: K.zeros_like(x))(s) for s in
+                encoder_states = encoder_states[:1] + [Lambda(lambda x: tensorflow.keras.zeros_like(x))(s) for s in
                                                             encoder_states[1:]]
     return encoder_states
 

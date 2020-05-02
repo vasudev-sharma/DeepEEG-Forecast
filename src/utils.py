@@ -2,7 +2,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 from tensorflow.keras.callbacks import TensorBoard
 import tensorflow as tf 
-from  keras import backend as K
 from metrics import compute_correlation
 from sklearn.preprocessing import MinMaxScaler
 import os 
