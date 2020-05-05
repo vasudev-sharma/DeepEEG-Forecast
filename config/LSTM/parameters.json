@@ -1,5 +1,5 @@
 {
-    "training_epochs":1,
+    "training_epochs":100,
     "batch_size" : 1024,
     "units" : 50,
     "learning_rate" : 0.1,

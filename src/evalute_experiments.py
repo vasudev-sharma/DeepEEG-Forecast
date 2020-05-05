@@ -1,5 +1,6 @@
 import json
 import numpy as np
+from utils import *
 
 with open("experiment_log.json", "r") as read_file:
         data = read_file.readlines() 
@@ -14,7 +15,7 @@ with open("experiment_log.json", "r") as read_file:
 #print(np.array(avg_corr).mean(axis = 0))
 
 
-
+#Average the experiments predictions and store them in models.json file
 with open("models.json", "a") as write_file:
         data = np.array(avg_corr).mean(axis = 0)
         print(data)
@@ -22,7 +23,7 @@ with open("models.json", "a") as write_file:
         json.dump(data.tolist(), write_file)
         write_file.write("\n")
 
-
+#Clear the Experiment Log
 with open("experiment_log.json", "w") as write_file:
         write_file.truncate(0)
         write_file.close()
