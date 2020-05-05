@@ -5,6 +5,7 @@ import tensorflow as tf
 from metrics import compute_correlation
 from sklearn.preprocessing import MinMaxScaler
 import os 
+import json
 
 def rolling_window(a, window):
     shape = a.shape[:-1] + (a.shape[-1] - window + 1, window)
@@ -221,21 +222,21 @@ def compare_plot_multistep_prediction(array, model_names, baseline):
     plt.savefig("../images/"+"Average_over_64_channels"+".png")
     plt.figure()
 
-'''
+
 def compare_models():
     color_list = ['r', 'b', 'g', 'c', 'm', 'y']
     model_names_list = ['LSTM_prediction', 'LSTM_prediction_from_Stimulus', 'LSTM_prediction_with_Stimulus']
-    with open("model.json", "r") as read_file:
+    with open("models.json", "r") as read_file:
             data = read_file.readlines() 
             plt.xlabel('time points')
             plt.ylabel('r value')
             time = np.arange(0, 160)
             for i in range(len(data)):
-                plt.plot(time, json.loads(data[i])["Experiment_"+str(i+1)], color_list[i], label = model_names_list[i])
-            plt.savefig("../images/"+name+".png")
+                plt.plot(time, json.loads(data[i]), color_list[i], label = model_names_list[i])
+                plt.legend()
+            
+            plt.savefig("../images/models_comparison.png")
             plt.figure()    
-
-'''
 
 
 '''

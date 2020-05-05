@@ -285,6 +285,7 @@ def vanilla_LSTM(dim,  units, source_Y, cell_type, learning_rate):
     _, window, features = dim
     model = Sequential()
     model.add(Input( (window, features)))
+    print(features)
     if cell_type == "LSTM":
         model.add(LSTM(units))
     elif cell_type == "RNN":
@@ -292,7 +293,7 @@ def vanilla_LSTM(dim,  units, source_Y, cell_type, learning_rate):
     else:
         model.add(GRU(units))
 
-    model.add(Dense(features))
+    model.add(Dense(1))
     #out = Lambda(lambda x: x * 2)(X)
     
 
