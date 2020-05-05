@@ -1,18 +1,17 @@
 import json
+import numpy as np
 
-'''
 with open("experiment_log.json", "r") as read_file:
-        data = read_file
-        print(data)
+        data = read_file.readlines() 
         avg_corr = []
-        for i in range(10):
-            avg_corr.append(data["Experiment_"+str(i)])
+        print(data)
+        for i in range(len(data)):
+            print(data[i])
+            #avg_corr.append(data[i]["Experiment_"+str(i)])
+            #print(data[i][])
+            #avg_corr.append(dict(data[i]["Experiment_1"])
+            avg_corr.append(json.loads(data[i])["Experiment_"+str(i+1)])
         print(avg_corr)
-'''
 
-data = []
-with open('experiment_log.json') as f:
-    for i, line in enumerate(f, start = 1):
-        print(json.loads(line))
-        data.append(json.loads(line)["Experiment_"+str(i)])
-print(data)
+print(np.array(avg_corr).mean())
+

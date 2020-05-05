@@ -4,6 +4,7 @@ from tensorflow.keras.models import Model, Sequential
 from tensorflow.keras import initializers
 from tensorflow.keras import optimizers
 import tensorflow.keras
+import tensorflow
 
 
 '''Linear Regression Models'''
@@ -291,7 +292,7 @@ def vanilla_LSTM(dim,  units, source_Y, cell_type, learning_rate):
     else:
         model.add(GRU(units))
 
-    model.add(Dense(features, activation = "linear"))
+    model.add(Dense(features))
     #out = Lambda(lambda x: x * 2)(X)
     
 
@@ -303,7 +304,7 @@ def vanilla_LSTM(dim,  units, source_Y, cell_type, learning_rate):
 
 
     #Compile the model
-    model.compile(loss = 'mse', optimizer = sgd, metrics=['mse'])
+    model.compile(loss=tensorflow.keras.losses.CosineSimilarity(axis=1), optimizer = adam, metrics=['mse'])
         
 
     return model

@@ -1,5 +1,6 @@
 
 import numpy as np
+import tensorflow
 
 def compute_correlation(true, pred):
     true = true.squeeze()
@@ -17,3 +18,8 @@ def list_correlation(true, pred):
         l.append(compute_correlation(true[:, i], pred[:, i]))
     return l
 
+def custom_loss_function(y_true, y_pred,axis=1):
+    # Compute loss
+    y_true = tenosorflow.backend.keras.l2_normalize(y_true, axis=axis)
+    y_pred = tensorflow.backend.keras.l2_normalize(y_pred, axis=axis)
+    return - tensorflow.backend.keras.sum(y_true * y_pred, axis=axis)

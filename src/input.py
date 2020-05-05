@@ -30,6 +30,8 @@ def get_data():
   #Z score
   format_1=stats.zscore(format_1, axis=2)
 
+  assert (format_1.shape == (65, 192, 840))
+  
   #format_1, scaler = preprocess_data(format_1)
   #format_1 = format_1[:, :, 160:]
   return format_1, trials

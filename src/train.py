@@ -27,6 +27,7 @@ model_name = os.environ["model_name"]
 horizon = os.environ["horizon"]
 training = os.environ["training"]
 MIMO_output = os.environ["MIMO_output"]
+experiment_no=os.environ["experiment_no"]
 
 
 
@@ -158,6 +159,7 @@ if __name__ == "__main__":
                         epochs = training_epochs, 
                         validation_data = (input_valid, output_valid), 
                         verbose = 1,
+                        shuffle = True
                         )
             else:
                 history = model.fit(
@@ -167,6 +169,7 @@ if __name__ == "__main__":
                         epochs = training_epochs, 
                         validation_data = (valid_X, valid_Y), 
                         verbose = 1,
+                        shuffle = True
                         )
 
             if flag_tuning == False:
@@ -248,6 +251,13 @@ if __name__ == "__main__":
         with open("corr_dat.json", "a") as write_file:
             write_file.write("\n")
             json.dump(corr, write_file)
+
+        with open("experiment_log.json", "a") as write_file:
+            json.dump({"Experiment_{}".format(experiment_no):corr }, write_file)
+            write_file.write("\n")
+       
+    
+       
     
     else: #Prediciting next time point of a single electrode or stimulus
     
@@ -266,8 +276,13 @@ if __name__ == "__main__":
         #Dump the values in json file
         data= {"Electrode_"+pred:corr}
         with open("corr_dat.json", "a") as write_file:
-            write_file.write("\n")
             json.dump(data, write_file)
+            write_file.write("\n")
+
+        
+        with open("experiment_log.json", "a") as write_file:
+            json.dump({"Experiment_{}".format(experiment_no):corr }, write_file)
+            write_file.write("\n")
 
         
         
