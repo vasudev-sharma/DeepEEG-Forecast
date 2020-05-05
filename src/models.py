@@ -304,7 +304,7 @@ def vanilla_LSTM(dim,  units, source_Y, cell_type, learning_rate):
 
 
     #Compile the model
-    model.compile(loss= tensorflow.keras.losses.cosine_similarity, optimizer = adam, metrics=['mse'])
+    model.compile(loss= tensorflow.keras.losses.mse, optimizer = sgd, metrics=['mse'])
         
 
     return model

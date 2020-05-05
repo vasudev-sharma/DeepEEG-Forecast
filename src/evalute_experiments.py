@@ -13,8 +13,13 @@ with open("experiment_log.json", "r") as read_file:
 
 print(np.array(avg_corr).mean())
 
+with open("models.json", "a") as write_file:
+        json.dump(np.array(avg_corr).mean(), write_file)
+        write_file.write("\n")
+
 
 with open("experiment_log.json", "w") as write_file:
         write_file.truncate(0)
         write_file.close()
+
 
