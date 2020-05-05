@@ -112,4 +112,19 @@ def baseline(test_x, test_y):
     np.savez_compressed('../models/baseline/baseline_all_channels.npz', l)
     return l
 
-        
+'''
+def compare_models():
+    color_list = ['r', 'b', 'g', 'c', 'm', 'y']
+    model_names_list = ['LSTM_prediction', 'LSTM_prediction_EE]
+    with open("model.json", "r") as read_file:
+            data = read_file.readlines() 
+            plt.xlabel('time points')
+            plt.ylabel('r value')
+            time = np.arange(0, 160)
+            for i in range(len(data)):
+                plt.plot(time, json.loads(data[i])["Experiment_"+str(i+1)], color_list[i])
+                plt.figure()
+
+
+
+'''

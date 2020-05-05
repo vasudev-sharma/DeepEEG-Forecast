@@ -23,8 +23,6 @@ with open("models.json", "a") as write_file:
         write_file.write("\n")
 
 
-
-
 with open("experiment_log.json", "w") as write_file:
         write_file.truncate(0)
         write_file.close()

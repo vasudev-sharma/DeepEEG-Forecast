@@ -278,31 +278,56 @@ if __name__ == "__main__":
        
     
     else: #Prediciting next time point of a single electrode or stimulus
-    
-        predictions = predict_single_timestep(model, test_X)
+        if horizon > 1:
+                #Predict the Y values for the given test set
+                #predictions = predict_multi_timestep(model, test_X, horizon = horizon, model_name = model_name)  #Output shape (Batch_size, horizon, features)
+                #plot_multistep_prediction(test_Y, predictions )
 
-        '''
-         # invert predictions
-        predictions = scaler.inverse_transform(predictions)
-        test_Y = scaler.inverse_transform(test_Y)
-        '''
+                if MIMO_output:
 
-        corr = compute_correlation(predictions, test_Y)
-        print("The value of correlation is for electrode {} is {}". format(pred, corr))
+                    if model_name == "LSTM_autoencoder":
+                        #LSTM AUTOENCODER Predictor
+                        decoder_model = build_prediction_model((1, train_Y.shape[-1]), units, cell_type)
+                        predictions = predict_autoencoder(encoder_model, decoder_model, encoder_input_test)
+                    else:
+                        predictions = predict_single_timestep(model, test_X)  #Output shape is (Batch_Size, n_features)
+                else:
+                    #Predict the Y values for the given test set
+                    predictions = predict_multi_timestep(model, test_X, horizon = horizon, model_name = model_name)  #Output shape (Batch_size, horizon, features)
+                    #plot_multistep_prediction(test_Y, predictions )
 
- 
-        #Dump the values in json file
-        data= {"Electrode_"+pred:corr}
+
+                 #Actual and Predicted values for Single electrode mutistep 
+                true_elec = test_Y[:, :, 0]
+                pred_elec = predictions[:, :, 0]
+
+                #R value of a single electrode for all the time steps
+                corr = list_correlation(true_elec, pred_elec)
+
+        else:
+            predictions = predict_single_timestep(model, test_X)  #Output shape is (Batch_Size, n_features)
+
+            '''
+            # invert predictions
+            predictions = scaler.inverse_transform(predictions)
+            test_Y = scaler.inverse_transform(test_Y)
+
+            '''
+
+            corr = list_correlation(predictions, test_Y)           #List of r value of all the the electrodes 
+
+            print(corr)
+                
+
+            
         with open("corr_dat.json", "a") as write_file:
-            json.dump(data, write_file)
             write_file.write("\n")
+            json.dump(corr, write_file)
 
-        
         with open("experiment_log.json", "a") as write_file:
             json.dump({"Experiment_{}".format(experiment_no):corr }, write_file)
             write_file.write("\n")
 
-        
         
         if model_name == "LR":
              weights = np.array(model.get_weights())
