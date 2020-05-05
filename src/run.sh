@@ -1,6 +1,6 @@
 export stimulus='2' # Whether you want to use stimulus or not 2 ---> no, 1 ---> yes
 export input_task='3' # What you want to predict 1--> EEG from stimulus, 2---> Stimulus from EEG, 3 --> EEG forecasting
-export model_name="LSTM_autoencoder"
+export model_name="LSTM"
 export horizon=160
 export training="True"
 export forecasting_self="True" 

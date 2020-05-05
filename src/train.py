@@ -26,6 +26,8 @@ input_task = os.environ["input_task"]
 model_name = os.environ["model_name"]
 horizon = os.environ["horizon"]
 training = os.environ["training"]
+MIMO_output = os.environ["MIMO_output"]
+
 
 
 if __name__ == "__main__":
@@ -192,12 +194,20 @@ if __name__ == "__main__":
             #predictions = predict_multi_timestep(model, test_X, horizon = horizon, model_name = model_name)  #Output shape (Batch_size, horizon, features)
             #plot_multistep_prediction(test_Y, predictions )
 
+            if MIMO_output:
 
-            #LSTM AUTOENCODER Predictor
-            decoder_model = build_prediction_model((1, train_Y.shape[-1]), units, cell_type)
-            predictions = predict_autoencoder(encoder_model, decoder_model, encoder_input_test)
+                if model_name == "LSTM_autoencoder":
+                    #LSTM AUTOENCODER Predictor
+                    decoder_model = build_prediction_model((1, train_Y.shape[-1]), units, cell_type)
+                    predictions = predict_autoencoder(encoder_model, decoder_model, encoder_input_test)
+                else:
+                    predictions = predict_single_timestep(model, test_X)  #Output shape is (Batch_Size, n_features)
+            else:
+                #Predict the Y values for the given test set
+                predictions = predict_multi_timestep(model, test_X, horizon = horizon, model_name = model_name)  #Output shape (Batch_size, horizon, features)
+                #plot_multistep_prediction(test_Y, predictions )
 
-    
+
 
            
             '''
