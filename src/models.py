@@ -5,7 +5,7 @@ from tensorflow.keras import initializers
 from tensorflow.keras import optimizers
 import tensorflow.keras
 import tensorflow
-
+from metrics import cosine_loss
 
 '''Linear Regression Models'''
 
@@ -304,7 +304,7 @@ def vanilla_LSTM(dim,  units, source_Y, cell_type, learning_rate):
 
 
     #Compile the model
-    model.compile(loss=tensorflow.keras.losses.CosineSimilarity(axis=1), optimizer = adam, metrics=['mse'])
+    model.compile(loss= tensorflow.keras.losses.cosine_similarity, optimizer = adam, metrics=['mse'])
         
 
     return model

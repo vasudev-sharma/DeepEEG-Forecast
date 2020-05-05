@@ -4,6 +4,7 @@ from tensorflow.keras import optimizers
 from input import data, teacher_forcing
 from tensorflow.keras.models import load_model
 from tensorflow.keras.utils import plot_model
+from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint
 from predict import predict_single_timestep, predict_multi_timestep, predict_autoencoder
 from models import get_model, build_prediction_model
 from metrics import compute_correlation, list_correlation
@@ -50,6 +51,8 @@ if __name__ == "__main__":
 
     multivariate = False
     split = True
+
+
     if horizon > 1:
         multivariate = True
     if model_name == "LR":
@@ -104,8 +107,18 @@ if __name__ == "__main__":
             reduce_lr = ReduceLROnPlateau(monitor='val_loss', factor=0.1,
                                     patience=10, min_lr=0.00001)
             '''
-
+            ####################################
+            # Callbacks    
+            ###################################
+            callback_early_stopping = EarlyStopping(monitor='val_loss', verbose=1, patience=20)
+            callback_checkpoint = ModelCheckpoint("../models/{}/{}_best_model.h5".format(model_name, model_name), monitor='val_loss', save_best_only=True, verbose = 1)
+        
             
+
+
+            ############################
+            #Compile the model 
+            ############################
             model = get_model()[model_name]
             if model_name == "LSTM" or model_name=="conv_LSTM":
                 model = model(train_X.shape, units, train_Y.shape[-1], cell_type, learning_rate)
@@ -149,7 +162,9 @@ if __name__ == "__main__":
             # Fit the model with the Data
             plot_model(model, "{}_model.png".format(model_name), True, True)
 
-
+            ####################
+            #Train the Model
+            ####################
 
             if model_name == "LSTM_autoencoder":
                 history = model.fit(
@@ -159,6 +174,7 @@ if __name__ == "__main__":
                         epochs = training_epochs, 
                         validation_data = (input_valid, output_valid), 
                         verbose = 1,
+                        callbacks = [callback_early_stopping, callback_checkpoint],
                         shuffle = True
                         )
             else:
@@ -169,20 +185,22 @@ if __name__ == "__main__":
                         epochs = training_epochs, 
                         validation_data = (valid_X, valid_Y), 
                         verbose = 1,
+                        callbacks = [callback_early_stopping, callback_checkpoint],
                         shuffle = True
                         )
 
             if flag_tuning == False:
                 model.save('../models/{}/{}.h5'.format(model_name, model_name))
 
-    else: 
+  
+    #Load Best Checkpoint Model using Early Stopping 
+    model = load_model('../models/{}/{}_best_model.h5'.format(model_name, model_name))
 
-        model = load_model('../models/{}/model_{}_all_channel.h5'.format(model_name, model_name))
-        plot_model(model, "{}_model.png".format(model_name), True, True)
+   
+    plot_model(model, "{}_model.png".format(model_name), True, True)
+    print(model.summary())
 
-        print(model.summary())
 
-    
     #Plot Training and Validation Loss
     plot_loss_curve(history)
 
