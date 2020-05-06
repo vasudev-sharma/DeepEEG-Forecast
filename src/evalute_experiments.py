@@ -2,7 +2,6 @@ import json
 import numpy as np
 from utils import compare_models
 
-'''
 with open("experiment_log.json", "r") as read_file:
         data = read_file.readlines() 
         avg_corr = []
@@ -32,7 +31,7 @@ with open("models.json", "a") as write_file:
 with open("experiment_log.json", "w") as write_file:
         write_file.truncate(0)
         write_file.close()
-'''
+
 
 compare_models()
 

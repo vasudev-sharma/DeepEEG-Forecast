@@ -371,6 +371,76 @@ def vanilla_LSTM_cross_hp(hp):
     return model
 
 
+def combined_model(dim,  units, source_Y, cell_type, learning_rate):
+   
+
+    _, window, features = dim
+
+  
+    #CNN Model
+
+    input_1 = Input((window, 1))
+    X = input_1
+
+
+    X = Conv1D(input_shape = (window, features), filters = 2,  kernel_size = 5)(X)
+    X = ELU()(X)
+    X = SpatialDropout1D(0.1)(X)
+    X = MaxPooling1D(pool_size= 2)(X)
+
+
+
+    X = Conv1D(filters = 4 , kernel_size = 5)(X)
+    X = ELU()(X)
+    X = SpatialDropout1D(0.1)(X)
+    X = MaxPooling1D(pool_size= 2)(X)
+
+
+    X = Conv1D(filters = 4,  kernel_size = 5)(X)
+    X = ELU()(X)
+    X = SpatialDropout1D(0.1)(X)
+    X = MaxPooling1D(pool_size= 2)(X)
+
+
+    X = Flatten()(X)
+  
+
+
+    #LSTM Model
+    input_2 = Input((window, 1))
+    Y = input_2
+    print(features)
+    if cell_type == "LSTM":
+        Y = LSTM(units)(Y)
+    elif cell_type == "RNN":
+        Y = SimpleRNN(units)(Y)
+    else:
+        Y = GRU(units)(Y)
+
+     # Concatenate
+    concat = tensorflow.keras.layers.Concatenate()([X, Y])
+
+    
+    output = Dense(1)(concat)
+    #out = Lambda(lambda x: x * 2)(X)
+    
+
+
+    #Set up the Optimizers
+    sgd = optimizers.SGD(learning_rate)
+    adam = optimizers.Adam(lr = learning_rate)
+    rmsprop = optimizers.RMSprop(lr = learning_rate)
+
+
+    model = Model([input_1, input_2], output)
+    #Compile the model
+    model.compile(loss = tensorflow.keras.losses.mse, optimizer = sgd, metrics=['mse'])
+        
+    return model
+
+
+
+
 
 def LSTM_autoencoder(dim,  units, source_Y, cell_type, learning_rate):
     _, window, features = dim
@@ -577,6 +647,7 @@ def get_model():
             "CNN_cross_hp":conv_1D_cross_hp,
             "CNN_cross":conv_1D_cross,
             "LSTM_autoencoder":LSTM_autoencoder,
-            "conv_lstm":conv_lstm
+            "conv_lstm":conv_lstm,
+            "combined_model":combined_model
             }
   return MODELS

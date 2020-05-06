@@ -98,7 +98,7 @@ if __name__ == "__main__":
             
             units = parameters["units"]
             learning_rate = parameters["learning_rate"]
-            if(model_name == "LSTM" or model_name=="LSTM_hp" or model_name =="LSTM_autoencoder" or model_name=="conv_LSTM"):
+            if(model_name == "LSTM" or model_name=="LSTM_hp" or model_name =="LSTM_autoencoder" or model_name=="conv_LSTM" or model_name == "combined_model"):
                 cell_type = parameters["cell_type"]
             
 
@@ -120,7 +120,7 @@ if __name__ == "__main__":
             #Compile the model 
             ############################
             model = get_model()[model_name]
-            if model_name == "LSTM" or model_name=="conv_LSTM":
+            if model_name == "LSTM" or model_name=="conv_LSTM" or model_name == "combined_model":
                 model = model(train_X.shape, units, train_Y.shape[-1], cell_type, learning_rate)
             elif model_name =="LSTM_autoencoder":
                 model, encoder_model, decoder_model = model(train_X.shape, units, train_Y.shape[-1], cell_type, learning_rate)
@@ -179,11 +179,11 @@ if __name__ == "__main__":
                         )
             else:
                 history = model.fit(
-                        train_X, 
+                        [train_X[:, :, 0].reshape(train_X.shape[0], train_X.shape[1], 1),train_X[:, :, 1].reshape(train_X.shape[0], train_X.shape[1], 1) ] , 
                         train_Y, 
                         batch_size = batch_size,
                         epochs = training_epochs, 
-                        validation_data = (valid_X, valid_Y), 
+                        validation_data = ([valid_X[:, :, 0].reshape(valid_X.shape[0], valid_X.shape[1], 1),valid_X[:, :, 1].reshape(valid_X.shape[0], valid_X.shape[1], 1) ]  , valid_Y), 
                         verbose = 1,
                         callbacks = [callback_early_stopping, callback_checkpoint],
                         shuffle = True

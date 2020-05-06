@@ -225,7 +225,7 @@ def compare_plot_multistep_prediction(array, model_names, baseline):
 
 def compare_models():
     color_list = ['r', 'b', 'g', 'c', 'm', 'y']
-    model_names_list = ['LSTM_prediction', 'LSTM_prediction_from_Stimulus', 'LSTM_prediction_with_Stimulus', 'EEG_Predictions_from_Stimulus_CNN']
+    model_names_list = ['LSTM_prediction', 'LSTM_prediction_from_Stimulus', 'LSTM_prediction_with_Stimulus', 'EEG_Predictions_from_Stimulus_CNN', "Combined_model"]
     with open("models.json", "r") as read_file:
             data = read_file.readlines() 
             plt.xlabel('time points')

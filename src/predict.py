@@ -3,8 +3,8 @@ from tqdm import tqdm
 from metrics import list_correlation
 
 def predict_single_timestep(model, input):
-
-    output = model.predict(input, verbose = 1)
+    print(input.shape)
+    output = model.predict([ input[:, :, 0].reshape(input.shape[0], input.shape[1], 1), input[:, :, 1].reshape(input.shape[0], input.shape[1], 1)], verbose = 1)
     return output
 
 
