@@ -5,7 +5,7 @@ from tensorflow.keras import initializers
 from tensorflow.keras import optimizers
 import tensorflow.keras
 import tensorflow
-from metrics import cosine_loss
+from metrics import cosine_loss, mean_squared_loss
 
 '''Linear Regression Models'''
 
@@ -72,10 +72,11 @@ def conv_1D(dim, source_Y, learning_rate):
     sgd = optimizers.SGD(learning_rate)
     adam = optimizers.Adam(lr = learning_rate)
     rmsprop = optimizers.RMSprop(lr = learning_rate)
+    adagrad = optimizers.Adagrad(lr =learning_rate)
 
 
     #Compile the model
-    model.compile(loss = 'mse', optimizer = sgd, metrics=['mse'])
+    model.compile(loss = mean_squared_loss, optimizer = adagrad, metrics=['mse'])
     
     model = Model(inputs = inp, outputs = out)
     return model
@@ -215,10 +216,11 @@ def conv_1D_cross(dim, source_Y, learning_rate):
     sgd = optimizers.SGD(learning_rate)
     adam = optimizers.Adam(lr = learning_rate)
     rmsprop = optimizers.RMSprop(lr = learning_rate)
+    adagrad = optimizers.Adagrad(lr =learning_rate)
 
 
     #Compile the model
-    model.compile(loss = 'mse', optimizer = sgd, metrics=['mse'])
+    model.compile(loss = tensorflow.keras.losses.MeanSquaredError(), optimizer = sgd, metrics=['mse'])
         
     return model
 
@@ -288,13 +290,13 @@ def vanilla_LSTM(dim,  units, source_Y, cell_type, learning_rate):
     print(features)
     if cell_type == "LSTM":
         model.add(LSTM(units))
+        #model.add(LSTM(units, return_sequences= True))
     elif cell_type == "RNN":
         model.add(SimpleRNN(units))
     else:
         model.add(GRU(units))
 
     model.add(Dense(1))
-    #out = Lambda(lambda x: x * 2)(X)
     
 
 
@@ -305,7 +307,7 @@ def vanilla_LSTM(dim,  units, source_Y, cell_type, learning_rate):
 
 
     #Compile the model
-    model.compile(loss= tensorflow.keras.losses.mse, optimizer = sgd, metrics=['mse'])
+    model.compile(loss= tensorflow.keras.losses.MeanSquaredError(), optimizer = sgd, metrics=['mse'])
         
 
     return model

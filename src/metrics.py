@@ -18,6 +18,10 @@ def list_correlation(true, pred):
         l.append(compute_correlation(true[:, i], pred[:, i]))
     return l
 
+
+def mean_squared_loss(y_true, y_pred, axis  = 1):
+    return tensorflow.keras.backend.mean(tensorflow.keras.backend.square(y_pred - y_true), axis=axis)
+
 def cosine_loss(y_true, y_pred,axis=1):
     # Compute loss
     y_true = tensorflow.keras.backend.l2_normalize(y_true, axis=axis)

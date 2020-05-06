@@ -7,7 +7,7 @@ from tensorflow.keras.utils import plot_model
 from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint
 from predict import predict_single_timestep, predict_multi_timestep, predict_autoencoder
 from models import get_model, build_prediction_model
-from metrics import compute_correlation, list_correlation
+from metrics import compute_correlation, list_correlation, mean_squared_loss, cosine_loss
 from tensorflow.keras.callbacks import ReduceLROnPlateau
 from utils import plot_multistep_prediction, plot_loss_curve
 from numpy import savez_compressed
@@ -177,6 +177,22 @@ if __name__ == "__main__":
                         callbacks = [callback_early_stopping, callback_checkpoint],
                         shuffle = True
                         )
+
+            else:
+                history = model.fit(
+                        train_X, 
+                        train_Y, 
+                        batch_size = batch_size,
+                        epochs = training_epochs, 
+                        validation_data = (valid_X  , valid_Y), 
+                        verbose = 1,
+                        callbacks = [callback_early_stopping, callback_checkpoint],
+                        shuffle = True
+                        )
+
+
+            '''
+            #Train for combined model
             else:
                 history = model.fit(
                         [train_X[:, :, 0].reshape(train_X.shape[0], train_X.shape[1], 1),train_X[:, :, 1].reshape(train_X.shape[0], train_X.shape[1], 1) ] , 
@@ -188,13 +204,16 @@ if __name__ == "__main__":
                         callbacks = [callback_early_stopping, callback_checkpoint],
                         shuffle = True
                         )
+            '''
+
+            
 
             if flag_tuning == False:
                 model.save('../models/{}/{}.h5'.format(model_name, model_name))
 
   
     #Load Best Checkpoint Model using Early Stopping 
-    model = load_model('../models/{}/{}_best_model.h5'.format(model_name, model_name))
+    model = load_model('../models/{}/{}_best_model.h5'.format(model_name, model_name) )
 
    
     plot_model(model, "{}_model.png".format(model_name), True, True)
@@ -239,9 +258,16 @@ if __name__ == "__main__":
 
             '''
 
+            print("Shape of true  is", test_Y.shape)
+            print("Shape of pred  is ", predictions.shape)
+
             #Actual and Predicted values for Single electrode mutistep 
             true_elec = test_Y[:, :, 0]
             pred_elec = predictions[:, :, 0]
+
+
+            print("Shape of true elec is", true_elec.shape)
+            print("Shape of pred elec is ", pred_elec.shape)
 
             #R value of a single electrode for all the time steps
             corr = list_correlation(true_elec, pred_elec)

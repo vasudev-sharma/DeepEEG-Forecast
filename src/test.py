@@ -1,4 +1,4 @@
-from utils import plot_multistep_prediction, compare_plot_multistep_prediction
+from utils import plot_multistep_prediction, compare_plot_multistep_prediction, compare_models
 from metrics import list_correlation
 from tqdm import tqdm
 from predict import baseline
@@ -13,7 +13,7 @@ if __name__ == "__main__":
     train,  valid, test = data(int(pred), input_task= "3", stimulus= "2", horizon = horizon,  split = True , multivariate = True)
     test_X, test_Y = test
     baseline = baseline(test_X, test_Y)
-    '''
+
     
     
     
@@ -41,6 +41,7 @@ if __name__ == "__main__":
 
     print("hello")
 
+    '''
 
     compare_models()
 

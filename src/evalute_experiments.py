@@ -33,5 +33,5 @@ with open("experiment_log.json", "w") as write_file:
         write_file.close()
 
 
-compare_models()
+#compare_models()
 
