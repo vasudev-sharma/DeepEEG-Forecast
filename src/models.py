@@ -26,7 +26,7 @@ def linear_regression(dim, learning_rate):
 
 
     #Compile the model
-    model.compile(loss = 'mse', optimizer = sgd, metrics=['mse'])
+    model.compile(loss = tensorflow.keras.losses.MeanSquaredError(), optimizer = sgd, metrics=['mse'])
 
     return model 
 
@@ -76,7 +76,7 @@ def conv_1D(dim, source_Y, learning_rate):
 
 
     #Compile the model
-    model.compile(loss = mean_squared_loss, optimizer = adagrad, metrics=['mse'])
+    model.compile(loss = tensorflow.keras.losses.MeanSquaredError(), optimizer = sgd, metrics=['mse'])
     
     model = Model(inputs = inp, outputs = out)
     return model
@@ -128,7 +128,7 @@ def conv_1D_hp(hp):
 
 
   #Compile the model
-  model.compile(loss = 'mse', optimizer = sgd, metrics=['mse'])
+  model.compile(loss = tensorflow.keras.losses.MeanSquaredError(), optimizer = sgd, metrics=['mse'])
     
   return model
 
@@ -175,7 +175,7 @@ def conv_1D_cross_hp(hp):
 
 
   #Compile the model
-  model.compile(loss = 'mse', optimizer = sgd, metrics=['mse'])
+  model.compile(loss = tensorflow.keras.losses.MeanSquaredError(), optimizer = sgd, metrics=['mse'])
     
   return model
 
@@ -288,7 +288,7 @@ def vanilla_LSTM_hp(hp):
 
 
     #Compile the model
-    model.compile(loss = 'mse', optimizer = sgd, metrics=['mse'])
+    model.compile(loss = tensorflow.keras.losses.MeanSquaredError(), optimizer = sgd, metrics=['mse'])
         
 
     return model
@@ -315,7 +315,7 @@ def vanilla_LSTM_cross_hp(hp):
 
 
     #Compile the model
-    model.compile(loss = 'mse', optimizer = sgd, metrics=['mse'])
+    model.compile(loss = tensorflow.keras.losses.MeanSquaredError(), optimizer = sgd, metrics=['mse'])
         
 
     return model
@@ -372,7 +372,7 @@ def conv_lstm( dim, source_Y, learning_rate):
 
 
     #Compile the model
-    model.compile(loss = 'mse', optimizer = sgd, metrics=['mse'])
+    model.compile(loss = tensorflow.keras.losses.MeanSquaredError(), optimizer = sgd, metrics=['mse'])
         
     return model
 
@@ -442,7 +442,7 @@ def combined_model(dim,  units, source_Y, cell_type, learning_rate):
 
     model = Model([input_1, input_2], output)
     #Compile the model
-    model.compile(loss = tensorflow.keras.losses.mse, optimizer = sgd, metrics=['mse'])
+    model.compile(loss = tensorflow.keras.losses.MeanSquaredError(), optimizer = sgd, metrics=['mse'])
         
     return model
 
@@ -542,7 +542,7 @@ def LSTM_autoencoder(dim,  units, source_Y, cell_type, learning_rate):
       decoder_outputs = build_static_loop(encoder_states, decoder_inputs, decoder)
     
     if z_score_outputs:
-      decoder_outputs = tf.divide(tf.subtract(decoder_outputs, keras.backend.mean(decoder_outputs,axis=1,keepdims=True)),keras.backend.std(decoder_outputs,axis=1,keepdims=True))
+      decoder_outputs = tensorflow.math.divide(tensorflow.math.subtract(decoder_outputs, tensorflow.keras.backend.mean(decoder_outputs,axis=1,keepdims=True)),tensorflow.keras.backend.std(decoder_outputs,axis=1,keepdims=True))
     # Full encoder-decoder model
     model = Model([encoder_inputs, decoder_inputs], decoder_outputs, name='train_model')
 
@@ -551,7 +551,7 @@ def LSTM_autoencoder(dim,  units, source_Y, cell_type, learning_rate):
     sgd = optimizers.SGD(learning_rate)
    
     #Compile the model
-    model.compile(loss = 'mse', optimizer = sgd, metrics=['mse'])
+    model.compile(loss = tensorflow.keras.losses.MeanSquaredError(), optimizer = sgd, metrics=['mse'])
  
 
 
@@ -663,6 +663,7 @@ def build_static_loop(init_states, decoder_inputs, decoder):
     :return:
         3D tensor of shape (batch_size, output_sequence_length, 1)
     """
+    horizon = 160
     decoder_dense = Dense(1)
     inputs = decoder_inputs
     all_outputs = []

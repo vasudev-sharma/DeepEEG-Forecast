@@ -72,11 +72,18 @@ if __name__ == "__main__":
       encoder_input_train, decoder_input_train, decoder_target_train = teacher_forcing(train_X, train_Y)
       encoder_input_valid, decoder_input_valid,  decoder_target_valid = teacher_forcing(valid_X, valid_Y)
       encoder_input_test, decoder_input_test,  decoder_target_test = teacher_forcing(test_X, test_Y)
+
+
+      if not False: #Set to False for not teacher forcing, set to True for Teacher_forcing 
+        decoder_input_train = decoder_input_train[:, :1, :1]
+        decoder_input_valid = decoder_input_valid[:, :1, :1]
+        decoder_input_test = decoder_input_test[:, :1, :1]
+
       input_train = [encoder_input_train, decoder_input_train]
       input_valid = [encoder_input_valid, decoder_input_valid]
       output_train = decoder_target_train
       output_valid = decoder_target_valid
-
+      input_test = [encoder_input_test, decoder_input_train]
       print("Shape of encoder_input_train, decoder_input_train, decoder_target_train is  ",  encoder_input_train.shape, decoder_input_train.shape, decoder_target_train.shape)
       print("Shape of encoder_input_valid, decoder_input_valid,  decoder_target_valid is ", encoder_input_valid.shape, decoder_input_valid.shape,  decoder_target_valid.shape)  
      
@@ -98,9 +105,12 @@ if __name__ == "__main__":
             
             units = parameters["units"]
             learning_rate = parameters["learning_rate"]
-            if(model_name == "LSTM" or model_name=="LSTM_hp" or model_name =="LSTM_autoencoder" or model_name=="conv_LSTM" or model_name == "combined_model"):
+            if(model_name == "LSTM" or model_name=="LSTM_hp"  or model_name=="conv_LSTM" or model_name == "combined_model"):
                 cell_type = parameters["cell_type"]
-            
+            if model_name == "LSTM_autoencoder":
+                cell_type = parameters["cell_type"]
+                teacher_force = parameters["teacher_force"]
+
 
 
             '''
@@ -123,7 +133,7 @@ if __name__ == "__main__":
             if model_name == "LSTM" or model_name=="conv_LSTM" or model_name == "combined_model":
                 model = model(train_X.shape, units, train_Y.shape[-1], cell_type, learning_rate)
             elif model_name =="LSTM_autoencoder":
-                model, encoder_model, decoder_model = model(train_X.shape, units, train_Y.shape[-1], cell_type, learning_rate)
+                model, encoder_model = model(train_X.shape, units, train_Y.shape[-1], cell_type, learning_rate)
             elif model_name == "CNN" or model_name =="CNN_cross":
                 model = model(train_X.shape, train_Y.shape[-1], learning_rate)
             elif model_name =="LR":
@@ -226,9 +236,11 @@ if __name__ == "__main__":
 
 
 
+    ####################################
+    #Inference stage
+    ####################################
 
-    ''''Inference stage '''
-
+    
     if input_task == "3":  #If you are performing Forecasting
         if horizon > 1:
             #Predict the Y values for the given test set
