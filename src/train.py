@@ -9,7 +9,7 @@ from predict import predict_single_timestep, predict_multi_timestep, predict_aut
 from models import get_model, build_prediction_model
 from metrics import compute_correlation, list_correlation, mean_squared_loss, cosine_loss
 from tensorflow.keras.callbacks import ReduceLROnPlateau
-from utils import plot_multistep_prediction, plot_loss_curve
+from utils import plot_multistep_prediction, plot_loss_curve, sanity_check
 from numpy import savez_compressed
 import numpy as np
 from tqdm import tqdm
@@ -178,6 +178,21 @@ if __name__ == "__main__":
                         shuffle = True
                         )
 
+            elif model_name == "combined_model":
+
+            
+                history = model.fit(
+                        [train_X[:, :, 0].reshape(train_X.shape[0], train_X.shape[1], 1),train_X[:, :, 1].reshape(train_X.shape[0], train_X.shape[1], 1) ] , 
+                        train_Y, 
+                        batch_size = batch_size,
+                        epochs = training_epochs, 
+                        validation_data = ([valid_X[:, :, 0].reshape(valid_X.shape[0], valid_X.shape[1], 1),valid_X[:, :, 1].reshape(valid_X.shape[0], valid_X.shape[1], 1) ]  , valid_Y), 
+                        verbose = 1,
+                        callbacks = [callback_early_stopping, callback_checkpoint],
+                        shuffle = True
+                        )
+            
+
             else:
                 history = model.fit(
                         train_X, 
@@ -189,24 +204,10 @@ if __name__ == "__main__":
                         callbacks = [callback_early_stopping, callback_checkpoint],
                         shuffle = True
                         )
-
-
-            '''
-            #Train for combined model
-            else:
-                history = model.fit(
-                        [train_X[:, :, 0].reshape(train_X.shape[0], train_X.shape[1], 1),train_X[:, :, 1].reshape(train_X.shape[0], train_X.shape[1], 1) ] , 
-                        train_Y, 
-                        batch_size = batch_size,
-                        epochs = training_epochs, 
-                        validation_data = ([valid_X[:, :, 0].reshape(valid_X.shape[0], valid_X.shape[1], 1),valid_X[:, :, 1].reshape(valid_X.shape[0], valid_X.shape[1], 1) ]  , valid_Y), 
-                        verbose = 1,
-                        callbacks = [callback_early_stopping, callback_checkpoint],
-                        shuffle = True
-                        )
-            '''
-
             
+            
+
+
 
             if flag_tuning == False:
                 model.save('../models/{}/{}.h5'.format(model_name, model_name))
@@ -358,6 +359,10 @@ if __name__ == "__main__":
         if model_name == "LR":
              weights = np.array(model.get_weights())
              plot_weights(weights, pred, window)
+        
+    
+    #Perform sanity check to check the model is performing the correct prediction over future time steps horzizons and over certi
+    sanity_check(test_Y, predictions)
 
 
     if flag_tuning == False:

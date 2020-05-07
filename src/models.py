@@ -225,58 +225,6 @@ def conv_1D_cross(dim, source_Y, learning_rate):
     return model
 
 
-'''Hybrid Models'''
-def conv_lstm( dim, source_Y, learning_rate):
-   
-
-    _, window, features = dim
-
-    #Encoder CNN Part 
-
-    model = Sequential([
-
-    Conv1D(input_shape = (window, features), filters = 2,  kernel_size = 5),
-    ELU(),
-    SpatialDropout1D(0.1),
-    MaxPooling1D(pool_size= 2),
-
-
-
-    Conv1D(filters = 4 , kernel_size = 5),
-    ELU(),
-    SpatialDropout1D(0.1),
-    MaxPooling1D(pool_size= 2),
-
-
-    Conv1D(filters = 4,  kernel_size = 5),
-    ELU(),
-    SpatialDropout1D(0.1),
-    MaxPooling1D(pool_size= 2),
-
-
-    Flatten(),
-
-
-    #Decoder LSTM part
-    RepeatVector(n_outputs),
-	LSTM(200, activation='relu', return_sequences=True),
-	TimeDistributed(Dense(1)),
-
-
-
-    Dense(features, activation = "linear", kernel_initializer = 'normal')
-    ])
-    #Set up the Optimizers
-    sgd = optimizers.SGD(learning_rate)
-    adam = optimizers.Adam(lr = learning_rate)
-    rmsprop = optimizers.RMSprop(lr = learning_rate)
-
-
-    #Compile the model
-    model.compile(loss = 'mse', optimizer = sgd, metrics=['mse'])
-        
-    return model
-
 
 
 '''Recurent Neural Network Models'''
@@ -371,6 +319,64 @@ def vanilla_LSTM_cross_hp(hp):
         
 
     return model
+
+
+########################
+#Hybrid Models
+########################
+
+def conv_lstm( dim, source_Y, learning_rate):
+   
+
+    _, window, features = dim
+
+    #Encoder CNN Part 
+
+    model = Sequential([
+
+    Conv1D(input_shape = (window, features), filters = 2,  kernel_size = 5),
+    ELU(),
+    SpatialDropout1D(0.1),
+    MaxPooling1D(pool_size= 2),
+
+
+
+    Conv1D(filters = 4 , kernel_size = 5),
+    ELU(),
+    SpatialDropout1D(0.1),
+    MaxPooling1D(pool_size= 2),
+
+
+    Conv1D(filters = 4,  kernel_size = 5),
+    ELU(),
+    SpatialDropout1D(0.1),
+    MaxPooling1D(pool_size= 2),
+
+
+    Flatten(),
+
+
+    #Decoder LSTM part
+    RepeatVector(n_outputs),
+	LSTM(200, activation='relu', return_sequences=True),
+	TimeDistributed(Dense(1)),
+
+
+
+    Dense(features, activation = "linear", kernel_initializer = 'normal')
+    ])
+    #Set up the Optimizers
+    sgd = optimizers.SGD(learning_rate)
+    adam = optimizers.Adam(lr = learning_rate)
+    rmsprop = optimizers.RMSprop(lr = learning_rate)
+
+
+    #Compile the model
+    model.compile(loss = 'mse', optimizer = sgd, metrics=['mse'])
+        
+    return model
+
+
 
 
 def combined_model(dim,  units, source_Y, cell_type, learning_rate):
@@ -503,8 +509,19 @@ def LSTM_autoencoder(dim,  units, source_Y, cell_type, learning_rate):
     '''''''''''''''''''''
     TF AutoEnocoder where the states of the Encoder are propogated to the Decoder Part
     '''''''''''''''''''''
+
+    ################################################
+    #LSTM Seq2Seq without and with Teacher Forcing
+    ################################################
+   
     encoder_inputs = Input(shape=(window, features), name='encoder_inputs')
-    decoder_inputs = Input(shape=(window, features), name='decoder_inputs')
+    teacher_force = False
+    z_score_outputs = False
+    if teacher_force:
+      decoder_inputs = Input(shape=(window, features), name='decoder_inputs')
+    else:
+      decoder_inputs = Input(shape=(1, features), name='decoder_inputs')
+
 
     encoder = LSTM(units, return_state=True)
     decoder = LSTM(units, return_sequences=True, return_state=True)
@@ -514,42 +531,39 @@ def LSTM_autoencoder(dim,  units, source_Y, cell_type, learning_rate):
 
     # define inference encoder
     encoder_model = Model(encoder_inputs, encoder_states)
-    encoder_states = format_encoder_states(cell_type, encoder_states, use_first=False)
+    #encoder_states = format_encoder_states(cell_type, encoder_states, use_first=False)
 
     # define training decoder
-    decoder_outputs, _, _ = decoder(decoder_inputs, initial_state=encoder_states)
-    decoder_dense = Dense(features)
-    decoder_outputs = decoder_dense(decoder_outputs)
+    if teacher_force:
+      decoder_outputs, _, _ = decoder(decoder_inputs, initial_state=encoder_states)
+      decoder_dense = Dense(features)
+      decoder_outputs = decoder_dense(decoder_outputs)
+    else:
+      decoder_outputs = build_static_loop(encoder_states, decoder_inputs, decoder)
+    
+    if z_score_outputs:
+      decoder_outputs = tf.divide(tf.subtract(decoder_outputs, keras.backend.mean(decoder_outputs,axis=1,keepdims=True)),keras.backend.std(decoder_outputs,axis=1,keepdims=True))
     # Full encoder-decoder model
     model = Model([encoder_inputs, decoder_inputs], decoder_outputs, name='train_model')
 
 
-
-    # define inference encoder
-    encoder_model = Model(encoder_inputs, encoder_states)
-    # define inference decoder
-    decoder_state_input_h = Input(shape=(units,))
-    decoder_state_input_c = Input(shape=(units,))
-    decoder_states_inputs = [decoder_state_input_h, decoder_state_input_c]
-    decoder_outputs, state_h, state_c = decoder(decoder_inputs, initial_state=decoder_states_inputs)
-    decoder_states = [state_h, state_c]
-    decoder_outputs = decoder_dense(decoder_outputs)
-    decoder_model = Model([decoder_inputs] + decoder_states_inputs, [decoder_outputs] + decoder_states, name='pred_model')
-
     #Set up the Optimizers
     sgd = optimizers.SGD(learning_rate)
-    adam = optimizers.Adam(lr = learning_rate)
-    rmsprop = optimizers.RMSprop(lr = learning_rate)
-
-
+   
     #Compile the model
     model.compile(loss = 'mse', optimizer = sgd, metrics=['mse'])
-        
+ 
 
 
 
     # return all models
-    return model, encoder_model, decoder_model
+    return model, encoder_model
+
+
+
+###################################################
+#Help Functions for Encoder Decoder Architecture
+###################################################
 
 
 def get_decoder_initial_states(units, cell_type):
@@ -634,6 +648,39 @@ def format_encoder_states(cell_type, encoder_states, use_first=True):
                 encoder_states = encoder_states[:1] + [Lambda(lambda x: tensorflow.keras.zeros_like(x))(s) for s in
                                                             encoder_states[1:]]
     return encoder_states
+
+
+
+def build_static_loop(init_states, decoder_inputs, decoder):
+    """
+    :param init_states: list
+        list og length = number of layers of encoder/decoder.
+        Each element is a 2D tensor of shape (batch_size, units)
+    :param decoder_inputs:
+        3D tensor of shape (batch_size, 1, 1)
+    :param decoder_inputs_exog:
+        3D tensor of shape (batch_size, output_sequence_length, n_features - 1)
+    :return:
+        3D tensor of shape (batch_size, output_sequence_length, 1)
+    """
+    decoder_dense = Dense(1)
+    inputs = decoder_inputs
+    all_outputs = []
+    for i in range(horizon):
+        decoder_outputs = decoder(inputs, initial_state=init_states)
+        init_states = decoder_outputs[1:] # state update
+        decoder_outputs = decoder_outputs[0]
+        decoder_outputs = decoder_dense(decoder_outputs)  # (batch, 1, 1)
+        all_outputs.append(decoder_outputs)
+        inputs = decoder_outputs # input update
+
+    decoder_outputs = Lambda(lambda x: tensorflow.keras.layers.concatenate(x, axis=1))(all_outputs)
+    return decoder_outputs
+
+
+
+
+
 
 
 

@@ -64,6 +64,23 @@ def show_data(data,channel, trial):
 
 
 
+def sanity_check(pred, true):
+    
+    plt.plot(true[1550,:,0],'r')
+    plt.plot(pred[1550,:,0],'b--')
+    plt.savefig("../images/sanity_check_prediction_horizon.png")
+
+    plt.figure()
+
+    #sanity check: the "sequence" is present both in the first AND in the second dimension
+    plt.plot(true[:500,0,0],'r')
+    plt.plot(pred[:500,0,0],'b--')
+    plt.savefig("../images/sanity_check_prediction_batch.png")
+    #not so true when z_score_outputs is true, because the 2nd dimension was z-scored, the first wasn't
+    #and, not so true with fake_data, i.e. when the signal is simple. The 'cheat' is only used for real EEG data.
+    #plt.xlim(100,150)
+
+
 class TrainValTensorBoard(TensorBoard):
     def __init__(self, log_dir='./logs', **kwargs):
         # Make the original `TensorBoard` log to a subdirectory 'training'
