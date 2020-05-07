@@ -66,7 +66,7 @@ def show_data(data,channel, trial):
 
 def sanity_check(pred, true):
 
-    if len(pred.shape == 2):
+    if len(pred.shape) == 2:
         return
     
     else:
