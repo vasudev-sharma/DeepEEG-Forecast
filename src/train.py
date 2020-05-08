@@ -170,7 +170,7 @@ if __name__ == "__main__":
 
             print(model.summary())
             # Fit the model with the Data
-            plot_model(model, "{}_model.png".format(model_name), True, True)
+            plot_model(model, "../images/{}_model.png".format(model_name), True, True)
 
             ####################
             #Train the Model
@@ -227,7 +227,7 @@ if __name__ == "__main__":
     model = load_model('../models/{}/{}_best_model.h5'.format(model_name, model_name) )
 
    
-    plot_model(model, "{}_model.png".format(model_name), True, True)
+    plot_model(model, "../images/{}_model.png".format(model_name), True, True)
     print(model.summary())
 
 
