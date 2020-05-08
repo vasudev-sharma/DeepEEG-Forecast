@@ -249,16 +249,24 @@ def compare_plot_multistep_prediction(array, model_names, baseline):
 
 def compare_models():
     color_list = ['r', 'b', 'g', 'c', 'm', 'y']
-    model_names_list = ['LSTM_prediction', 'LSTM_prediction_from_Stimulus', 'LSTM_prediction_with_Stimulus', 'EEG_Predictions_from_Stimulus_CNN', "Combined_model", "bbbbbbbb", "cc"]
+    electrode_no = "26_"
+    #model_names_list = ['LSTM_prediction', 'LSTM_prediction', 'LSTM+CNN_prediction_from_Stimulus+EEG', 'LSTM+CNN_prediction_from_Stimulus+EEG','CNN_prediction_from_stimulus', 'CNN_prediction_from_stimulus']
+    model_names_list = ['LSTM_prediction', 'LSTM_prediction', 'LSTM_prediction_from_Stimulus_only', 'LSTM_prediction_from_Stimulus_only', 'LSTM_prediction_with_Stimulus+EEG', 'LSTM_prediction_with_Stimulus+EEG','CNN_prediction_from_stimulus', 'CNN_prediction_from_stimulus',"LSTM+CNN_prediction_from_Stimulus+EEG", "LSTM+CNN_prediction_from_Stimulus+EEG"]
+
     with open("models.json", "r") as read_file:
             data = read_file.readlines() 
             plt.xlabel('time points')
             plt.ylabel('r value')
             time = np.arange(0, 160)
             for i in range(len(data)):
-                plt.plot(time, json.loads(data[i]), color_list[i], label = model_names_list[i])
-                plt.legend()
-            
+                print(i)
+                if i % 2 == 0:
+                    y = json.loads(data[i])
+                else:
+                    e = json.loads(data[i])
+                    plt.errorbar(time, y, e,  label = electrode_no + model_names_list[i])
+                    plt.legend()
+
             plt.savefig("../images/models_comparison.png")
             plt.figure()    
 
