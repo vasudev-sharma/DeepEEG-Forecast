@@ -5,6 +5,7 @@ export horizon=160
 export training="True"
 export forecasting_self="True" 
 export MIMO_output=""
+export load_checkpoint="True"
 #set pred to -1 if you want to predict future value of EEG using their past value and if you want to want to preidict single electrode future value from their past value declare a sequence in the for loop like this `seq 1 30`
 for i in 26;
 do 

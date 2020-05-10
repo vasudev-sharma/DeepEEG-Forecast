@@ -29,7 +29,7 @@ horizon = os.environ["horizon"]
 training = os.environ["training"]
 MIMO_output = os.environ["MIMO_output"]
 experiment_no=os.environ["experiment_no"]
-
+load_checkpoint=os.environ["load_checkpoint"]
 
 
 if __name__ == "__main__":
@@ -111,7 +111,16 @@ if __name__ == "__main__":
                 cell_type = parameters["cell_type"]
                 teacher_force = parameters["teacher_force"]
 
+            #Create directory of the model if it does not exists
+            if not os.path.exists("../models/{}".format(model_name,)):
+                os.mkdir("../models/{}".format(model_name))
 
+
+            '''
+            #Load Best Checkpoint Model using Early Stopping 
+            model = load_model('../models/{}/{}_best_model.h5'.format(model_name, model_name) )
+            print(model.summary())
+            '''
 
             '''
             reduce_lr = ReduceLROnPlateau(monitor='val_loss', factor=0.1,
@@ -121,7 +130,7 @@ if __name__ == "__main__":
             # Callbacks    
             ###################################
             callback_early_stopping = EarlyStopping(monitor='val_loss', verbose=1, patience=20)
-            callback_checkpoint = ModelCheckpoint("../models/{}/{}_best_model.h5".format(model_name, model_name), monitor='val_loss', save_best_only=True, verbose = 1)
+            callback_checkpoint = ModelCheckpoint('../models/{}/{}_best_model.h5'.format(model_name, model_name), monitor='val_loss',  save_best_only=True, verbose = 1)
         
             
 
@@ -166,6 +175,14 @@ if __name__ == "__main__":
                 model=tuner_search.get_best_models(num_models=1)[0]
                 
                 training_epochs = 30
+            
+
+            if load_checkpoint:
+                #Load Best Checkpoint Model using Early Stopping 
+                model = load_model('../models/{}/{}_best_model.h5'.format(model_name, model_name) )
+
+
+
 
 
             print(model.summary())
@@ -212,7 +229,7 @@ if __name__ == "__main__":
                         validation_data = (valid_X  , valid_Y), 
                         verbose = 1,
                         callbacks = [callback_early_stopping, callback_checkpoint],
-                        shuffle = True
+                        shuffle = True, initial_epoch= 5
                         )
             
             
