@@ -1,4 +1,5 @@
 import os
+
 import json
 from tensorflow.keras import optimizers
 from input import data, teacher_forcing
@@ -29,7 +30,9 @@ horizon = os.environ["horizon"]
 training = os.environ["training"]
 MIMO_output = os.environ["MIMO_output"]
 experiment_no=os.environ["experiment_no"]
-load_checkpoint=os.environ["load_checkpoint"]
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3' 
+
+
 
 
 if __name__ == "__main__":
@@ -68,59 +71,68 @@ if __name__ == "__main__":
     valid_X, valid_Y = valid
     test_X, test_Y = test        
 
+
+
+
+    #Read the parameters of the model
+    with open("../config/{}/parameters.json".format(model_name), "r") as param_file:
+        parameters = json.load(param_file)
+
+    #Parameters of model
+    training_epochs = parameters["training_epochs"]
+    if model_name == "LR" and input_task=="1":
+        batch_size = train_X.shape[0]
+    else:     
+        batch_size = parameters["batch_size"]
+    
+    units = parameters["units"]
+    learning_rate = parameters["learning_rate"]
+    if(model_name == "LSTM" or model_name=="LSTM_hp"  or model_name=="conv_LSTM" or model_name == "combined_model"):
+        cell_type = parameters["cell_type"]
+    if model_name == "LSTM_autoencoder":
+        cell_type = parameters["cell_type"]
+        teacher_force = bool(parameters["teacher_force"])
+
+
+
     if model_name == "LSTM_autoencoder":
       encoder_input_train, decoder_input_train, decoder_target_train = teacher_forcing(train_X, train_Y)
       encoder_input_valid, decoder_input_valid,  decoder_target_valid = teacher_forcing(valid_X, valid_Y)
       encoder_input_test, decoder_input_test,  decoder_target_test = teacher_forcing(test_X, test_Y)
 
 
-      if not False: #Set to False for not teacher forcing, set to True for Teacher_forcing 
+      if not teacher_force: #Set to False for not teacher forcing, set to True for Teacher_forcing 
+        print("Teacher force is used")  
         decoder_input_train = decoder_input_train[:, :1, :1]
         decoder_input_valid = decoder_input_valid[:, :1, :1]
         decoder_input_test = decoder_input_test[:, :1, :1]
+        input_train = [encoder_input_train, decoder_input_train]
+        input_valid = [encoder_input_valid, decoder_input_valid]
+        input_test = [encoder_input_test, decoder_input_train]
 
-      input_train = [encoder_input_train, decoder_input_train]
-      input_valid = [encoder_input_valid, decoder_input_valid]
+
+      else:
+        input_train = encoder_input_train
+        input_valid = encoder_input_valid
+        input_test = encoder_input_test
+
+
+
       output_train = decoder_target_train
       output_valid = decoder_target_valid
-      input_test = [encoder_input_test, decoder_input_train]
       print("Shape of encoder_input_train, decoder_input_train, decoder_target_train is  ",  encoder_input_train.shape, decoder_input_train.shape, decoder_target_train.shape)
       print("Shape of encoder_input_valid, decoder_input_valid,  decoder_target_valid is ", encoder_input_valid.shape, decoder_input_valid.shape,  decoder_target_valid.shape)  
      
 
 
+
     
     if training: 
 
-            #Read the parameters of the model
-            with open("../config/{}/parameters.json".format(model_name), "r") as param_file:
-                parameters = json.load(param_file)
 
-            #Parameters of model
-            training_epochs = parameters["training_epochs"]
-            if model_name == "LR" and input_task=="1":
-                batch_size = train_X.shape[0]
-            else:     
-                batch_size = parameters["batch_size"]
-            
-            units = parameters["units"]
-            learning_rate = parameters["learning_rate"]
-            if(model_name == "LSTM" or model_name=="LSTM_hp"  or model_name=="conv_LSTM" or model_name == "combined_model"):
-                cell_type = parameters["cell_type"]
-            if model_name == "LSTM_autoencoder":
-                cell_type = parameters["cell_type"]
-                teacher_force = parameters["teacher_force"]
 
-            #Create directory of the model if it does not exists
             if not os.path.exists("../models/{}".format(model_name,)):
                 os.mkdir("../models/{}".format(model_name))
-
-
-            '''
-            #Load Best Checkpoint Model using Early Stopping 
-            model = load_model('../models/{}/{}_best_model.h5'.format(model_name, model_name) )
-            print(model.summary())
-            '''
 
             '''
             reduce_lr = ReduceLROnPlateau(monitor='val_loss', factor=0.1,
@@ -130,7 +142,7 @@ if __name__ == "__main__":
             # Callbacks    
             ###################################
             callback_early_stopping = EarlyStopping(monitor='val_loss', verbose=1, patience=20)
-            callback_checkpoint = ModelCheckpoint('../models/{}/{}_best_model.h5'.format(model_name, model_name), monitor='val_loss',  save_best_only=True, verbose = 1)
+            callback_checkpoint = ModelCheckpoint("../models/{}/{}_best_model.h5".format(model_name, model_name), monitor='val_loss', save_best_only=True, verbose = 1)
         
             
 
@@ -142,7 +154,7 @@ if __name__ == "__main__":
             if model_name == "LSTM" or model_name=="conv_LSTM" or model_name == "combined_model":
                 model = model(train_X.shape, units, train_Y.shape[-1], cell_type, learning_rate)
             elif model_name =="LSTM_autoencoder":
-                model, encoder_model = model(train_X.shape, units, train_Y.shape[-1], cell_type, learning_rate)
+                model, encoder_model = model(train_X.shape, units, train_Y.shape[-1], cell_type, learning_rate, teacher_force)
             elif model_name == "CNN" or model_name =="CNN_cross":
                 model = model(train_X.shape, train_Y.shape[-1], learning_rate)
             elif model_name =="LR":
@@ -175,14 +187,6 @@ if __name__ == "__main__":
                 model=tuner_search.get_best_models(num_models=1)[0]
                 
                 training_epochs = 30
-            
-
-            if load_checkpoint:
-                #Load Best Checkpoint Model using Early Stopping 
-                model = load_model('../models/{}/{}_best_model.h5'.format(model_name, model_name) )
-
-
-
 
 
             print(model.summary())
@@ -229,7 +233,7 @@ if __name__ == "__main__":
                         validation_data = (valid_X  , valid_Y), 
                         verbose = 1,
                         callbacks = [callback_early_stopping, callback_checkpoint],
-                        shuffle = True, initial_epoch= 5
+                        shuffle = True
                         )
             
             
@@ -238,6 +242,10 @@ if __name__ == "__main__":
 
             if flag_tuning == False:
                 model.save('../models/{}/{}.h5'.format(model_name, model_name))
+        
+            #Plot Training and Validation Loss
+            plot_loss_curve(history)
+
 
   
     #Load Best Checkpoint Model using Early Stopping 
@@ -247,9 +255,6 @@ if __name__ == "__main__":
     plot_model(model, "../images/{}_model.png".format(model_name))
     print(model.summary())
 
-
-    #Plot Training and Validation Loss
-    plot_loss_curve(history)
 
 
 
@@ -267,9 +272,12 @@ if __name__ == "__main__":
             if MIMO_output:
 
                 if model_name == "LSTM_autoencoder":
-                    #LSTM AUTOENCODER Predictor
-                    decoder_model = build_prediction_model((1, train_Y.shape[-1]), units, cell_type)
-                    predictions = predict_autoencoder(encoder_model, decoder_model, encoder_input_test)
+                    if teacher_force:
+                        predictions = predict_single_timestep(model, input_test)  #Output shape is (Batch_Size, n_features)
+                    else:    
+                        #LSTM AUTOENCODER Predictor
+                        decoder_model = build_prediction_model((1, train_Y.shape[-1]), units, cell_type)
+                        predictions = predict_autoencoder(encoder_model, decoder_model, encoder_input_test)
                 else:
                     predictions = predict_single_timestep(model, test_X)  #Output shape is (Batch_Size, n_features)
             else:

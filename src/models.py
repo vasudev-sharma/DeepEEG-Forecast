@@ -450,7 +450,7 @@ def combined_model(dim,  units, source_Y, cell_type, learning_rate):
 
 
 
-def LSTM_autoencoder(dim,  units, source_Y, cell_type, learning_rate):
+def LSTM_autoencoder(dim,  units, source_Y, cell_type, learning_rate, teacher_force):
     _, window, features = dim
    
     
@@ -515,27 +515,32 @@ def LSTM_autoencoder(dim,  units, source_Y, cell_type, learning_rate):
     ################################################
    
     encoder_inputs = Input(shape=(window, features), name='encoder_inputs')
-    teacher_force = False
+    teacher_force = teacher_force
     z_score_outputs = False
     if teacher_force:
+      print("Model is using teacher forcing")
       decoder_inputs = Input(shape=(window, features), name='decoder_inputs')
     else:
+      print("Model is not using teacher forcing")
       decoder_inputs = Input(shape=(1, features), name='decoder_inputs')
 
+    if teacher_force:
+        encoder = LSTM(units, return_state=True, return_sequences=True)
+    else:
+        encoder = LSTM(units, return_state=True,)
 
-    encoder = LSTM(units, return_state=True)
     decoder = LSTM(units, return_sequences=True, return_state=True)
 
     encoder_outputs, state_h, state_c = encoder(encoder_inputs)
     encoder_states = [state_h, state_c]
 
-    # define inference encoder
     encoder_model = Model(encoder_inputs, encoder_states)
+
     #encoder_states = format_encoder_states(cell_type, encoder_states, use_first=False)
 
     # define training decoder
     if teacher_force:
-      decoder_outputs, _, _ = decoder(decoder_inputs, initial_state=encoder_states)
+      decoder_outputs, _, _ = decoder(encoder_outputs, initial_state=encoder_states)
       decoder_dense = Dense(features)
       decoder_outputs = decoder_dense(decoder_outputs)
     else:
@@ -543,8 +548,13 @@ def LSTM_autoencoder(dim,  units, source_Y, cell_type, learning_rate):
     
     if z_score_outputs:
       decoder_outputs = tensorflow.math.divide(tensorflow.math.subtract(decoder_outputs, tensorflow.keras.backend.mean(decoder_outputs,axis=1,keepdims=True)),tensorflow.keras.backend.std(decoder_outputs,axis=1,keepdims=True))
-    # Full encoder-decoder model
-    model = Model([encoder_inputs, decoder_inputs], decoder_outputs, name='train_model')
+    
+    if teacher_force:
+        # Full encoder-decoder model
+        model = Model(encoder_inputs, decoder_outputs, name='train_model')
+    else:
+        model = Model([encoder_inputs, decoder_inputs], decoder_outputs, name='train_model')
+
 
 
     #Set up the Optimizers
@@ -634,18 +644,18 @@ def format_encoder_states(cell_type, encoder_states, use_first=True):
         # tensorflow.keras version 2.1.4 has encoder states reversed w.r.t later versions
         if tensorflow.keras.__version__ < '2.2':
             if cell_type == 'LSTM':
-                encoder_states = [Lambda(lambda x: tensorflow.keras.zeros_like(x))(s) for s in encoder_states[:-2]] + [
+                encoder_states = [Lambda(lambda x: tensorflow.keras.backend.zeros_like(x))(s) for s in encoder_states[:-2]] + [
                     encoder_states[-2]]
             else:
-                encoder_states = [Lambda(lambda x: tensorflow.keras.zeros_like(x))(s) for s in encoder_states[:-1]] + [
+                encoder_states = [Lambda(lambda x: tensorflow.keras.backend.zeros_like(x))(s) for s in encoder_states[:-1]] + [
                     encoder_states[-1]]
         else:
             if cell_type == 'LSTM':
                 print("Fuck OFF")
-                encoder_states = encoder_states[:2] + [Lambda(lambda x: tensorflow.keras.zeros_like(x))(s) for s in
+                encoder_states = encoder_states[:2] + [Lambda(lambda x: tensorflow.keras.backend.zeros_like(x))(s) for s in
                                                             encoder_states[2:]]
             else:
-                encoder_states = encoder_states[:1] + [Lambda(lambda x: tensorflow.keras.zeros_like(x))(s) for s in
+                encoder_states = encoder_states[:1] + [Lambda(lambda x: tensorflow.keras.backend.zeros_like(x))(s) for s in
                                                             encoder_states[1:]]
     return encoder_states
 
