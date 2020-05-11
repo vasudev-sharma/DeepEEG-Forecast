@@ -108,7 +108,7 @@ if __name__ == "__main__":
         decoder_input_test = decoder_input_test[:, :1, :1]
         input_train = [encoder_input_train, decoder_input_train]
         input_valid = [encoder_input_valid, decoder_input_valid]
-        input_test = [encoder_input_test, decoder_input_train]
+        input_test = [encoder_input_test, decoder_input_test]
 
 
       else:
@@ -141,7 +141,7 @@ if __name__ == "__main__":
             ####################################
             # Callbacks    
             ###################################
-            callback_early_stopping = EarlyStopping(monitor='val_loss', verbose=1, patience=20)
+            callback_early_stopping = EarlyStopping(monitor='val_loss', verbose=1, patience=100)
             callback_checkpoint = ModelCheckpoint("../models/{}/{}_best_model.h5".format(model_name, model_name), monitor='val_loss', save_best_only=True, verbose = 1)
         
             
@@ -249,7 +249,7 @@ if __name__ == "__main__":
 
   
     #Load Best Checkpoint Model using Early Stopping 
-    model = load_model('../models/{}/{}_best_model.h5'.format(model_name, model_name) )
+    model = load_model('../models/{}/{}_best_model.h5'.format(model_name, model_name), custom_objects={"cosine_loss":cosine_loss} )
 
    
     plot_model(model, "../images/{}_model.png".format(model_name))
@@ -271,12 +271,13 @@ if __name__ == "__main__":
         if MIMO_output:
 
             if model_name == "LSTM_autoencoder":
-                if teacher_force:
-                    predictions = predict_single_timestep(model, input_test)  #Output shape is (Batch_Size, n_features)
-                else:    
-                    #LSTM AUTOENCODER Predictor
-                    decoder_model = build_prediction_model((1, train_Y.shape[-1]), units, cell_type)
-                    predictions = predict_autoencoder(encoder_model, decoder_model, encoder_input_test)
+                
+                predictions = predict_single_timestep(model, input_test)  #Output shape is (Batch_Size, n_features)
+                '''
+                #LSTM AUTOENCODER Predictor
+                decoder_model = build_prediction_model((1, train_Y.shape[-1]), units, cell_type)
+                predictions = predict_autoencoder(encoder_model, decoder_model, encoder_input_test)
+                '''
             else:
                 predictions = predict_single_timestep(model, test_X)  #Output shape is (Batch_Size, n_features)
         else:

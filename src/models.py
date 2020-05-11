@@ -26,7 +26,7 @@ def linear_regression(dim, learning_rate):
 
 
     #Compile the model
-    model.compile(loss = tensorflow.keras.losses.MeanSquaredError(), optimizer = sgd, metrics=['mse'])
+    model.compile(loss = tensorflow.keras.losses.MeanSquaredError(), optimizer = adam, metrics=['mse'])
 
     return model 
 
@@ -128,7 +128,7 @@ def conv_1D_hp(hp):
 
 
   #Compile the model
-  model.compile(loss = tensorflow.keras.losses.MeanSquaredError(), optimizer = sgd, metrics=['mse'])
+  model.compile(loss = tensorflow.keras.losses.MeanSquaredError(), optimizer = adam, metrics=['mse'])
     
   return model
 
@@ -175,7 +175,7 @@ def conv_1D_cross_hp(hp):
 
 
   #Compile the model
-  model.compile(loss = tensorflow.keras.losses.MeanSquaredError(), optimizer = sgd, metrics=['mse'])
+  model.compile(loss = tensorflow.keras.losses.MeanSquaredError(), optimizer = adam, metrics=['mse'])
     
   return model
 
@@ -210,7 +210,7 @@ def conv_1D_cross(dim, source_Y, learning_rate):
     
     Flatten(),
   
-    Dense(features, activation = "linear", kernel_initializer = 'normal')
+    Dense(1, activation = "linear", kernel_initializer = 'normal')
     ])
     #Set up the Optimizers
     sgd = optimizers.SGD(learning_rate)
@@ -220,7 +220,7 @@ def conv_1D_cross(dim, source_Y, learning_rate):
 
 
     #Compile the model
-    model.compile(loss = tensorflow.keras.losses.MeanSquaredError(), optimizer = sgd, metrics=['mse'])
+    model.compile(loss = tensorflow.keras.losses.MeanAbsoluteError(), optimizer = adam, metrics=['mse'])
         
     return model
 
@@ -237,7 +237,7 @@ def vanilla_LSTM(dim,  units, source_Y, cell_type, learning_rate):
     model.add(Input( (window, features)))
     print(features)
     if cell_type == "LSTM":
-        model.add(LSTM(units))
+        model.add(LSTM(units, return_sequences=True))
         #model.add(LSTM(units, return_sequences= True))
     elif cell_type == "RNN":
         model.add(SimpleRNN(units))
@@ -255,7 +255,7 @@ def vanilla_LSTM(dim,  units, source_Y, cell_type, learning_rate):
 
 
     #Compile the model
-    model.compile(loss= tensorflow.keras.losses.MeanSquaredError(), optimizer = sgd, metrics=['mse'])
+    model.compile(loss= tensorflow.keras.losses.mse, optimizer = adam, metrics=['mse'])
         
 
     return model
@@ -288,7 +288,7 @@ def vanilla_LSTM_hp(hp):
 
 
     #Compile the model
-    model.compile(loss = tensorflow.keras.losses.MeanSquaredError(), optimizer = sgd, metrics=['mse'])
+    model.compile(loss = tensorflow.keras.losses.MeanSquaredError(), optimizer = adam, metrics=['mse'])
         
 
     return model
@@ -315,7 +315,7 @@ def vanilla_LSTM_cross_hp(hp):
 
 
     #Compile the model
-    model.compile(loss = tensorflow.keras.losses.MeanSquaredError(), optimizer = sgd, metrics=['mse'])
+    model.compile(loss = tensorflow.keras.losses.MeanSquaredError(), optimizer = adam, metrics=['mse'])
         
 
     return model
@@ -372,7 +372,7 @@ def conv_lstm( dim, source_Y, learning_rate):
 
 
     #Compile the model
-    model.compile(loss = tensorflow.keras.losses.MeanSquaredError(), optimizer = sgd, metrics=['mse'])
+    model.compile(loss = tensorflow.keras.losses.MeanSquaredError(), optimizer = adam, metrics=['mse'])
         
     return model
 
@@ -442,7 +442,7 @@ def combined_model(dim,  units, source_Y, cell_type, learning_rate):
 
     model = Model([input_1, input_2], output)
     #Compile the model
-    model.compile(loss = tensorflow.keras.losses.MeanSquaredError(), optimizer = sgd, metrics=['mse'])
+    model.compile(loss = tensorflow.keras.losses.MeanSquaredError(), optimizer = adam, metrics=['mse'])
         
     return model
 
@@ -559,9 +559,10 @@ def LSTM_autoencoder(dim,  units, source_Y, cell_type, learning_rate, teacher_fo
 
     #Set up the Optimizers
     sgd = optimizers.SGD(learning_rate)
+    adam = optimizers.Adam(learning_rate)
    
     #Compile the model
-    model.compile(loss = cosine_loss , optimizer = sgd, metrics=['mse'])
+    model.compile(loss = cosine_loss , optimizer = adam, metrics=['mse'])
  
 
 
