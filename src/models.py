@@ -9,7 +9,7 @@ from metrics import cosine_loss, mean_squared_loss
 
 '''Linear Regression Models'''
 
-def linear_regression(dim, learning_rate):
+def linear_regression(dim, learning_rate, loss, optimizer):
 
     _, features = dim 
     out_features = features / 160
@@ -25,8 +25,19 @@ def linear_regression(dim, learning_rate):
     rmsprop = optimizers.RMSprop(lr = learning_rate)
 
 
+    
+    if loss == "MSE":
+        loss = tensorflow.keras.losses.MeanSquaredError()
+    else:
+        loss = cosine_loss
+    
+    if optimizer == "SGD":
+        optimizer = sgd
+    else:
+        optimizer = adam
+
     #Compile the model
-    model.compile(loss = tensorflow.keras.losses.MeanSquaredError(), optimizer = adam, metrics=['mse'])
+    model.compile(loss = loss, optimizer = optimizer, metrics=['mse'])
 
     return model 
 
@@ -35,7 +46,7 @@ def linear_regression(dim, learning_rate):
 '''CNN Models'''
 
 #COnvolutional Neural Network
-def conv_1D(dim, source_Y, learning_rate):
+def conv_1D(dim, source_Y, learning_rate, loss, optimizer):
 
     _, window, features = dim
 
@@ -68,6 +79,8 @@ def conv_1D(dim, source_Y, learning_rate):
     #X = Dense(50, activation = "relu")(X)
     out = Dense(source_Y, activation = "linear",  kernel_initializer = 'normal')(X)
 
+    
+    model = Model(inputs = inp, outputs = out)
      #Set up the Optimizers
     sgd = optimizers.SGD(learning_rate)
     adam = optimizers.Adam(lr = learning_rate)
@@ -75,10 +88,19 @@ def conv_1D(dim, source_Y, learning_rate):
     adagrad = optimizers.Adagrad(lr =learning_rate)
 
 
-    #Compile the model
-    model.compile(loss = tensorflow.keras.losses.MeanSquaredError(), optimizer = sgd, metrics=['mse'])
+    if loss == "MSE":
+        loss = tensorflow.keras.losses.MeanSquaredError()
+    else:
+        loss = cosine_loss
     
-    model = Model(inputs = inp, outputs = out)
+    if optimizer == "SGD":
+        optimizer = sgd
+    else:
+        optimizer = adam
+
+    #Compile the model
+    model.compile(loss = loss, optimizer = optimizer, metrics=['mse'])
+
     return model
 
 
@@ -182,7 +204,7 @@ def conv_1D_cross_hp(hp):
 
 '''Models for Cross Correlation between Stimuli and EEG'''
 
-def conv_1D_cross(dim, source_Y, learning_rate):
+def conv_1D_cross(dim, source_Y, learning_rate, loss, optimizer):
 
     _, window, features = dim
 
@@ -219,9 +241,19 @@ def conv_1D_cross(dim, source_Y, learning_rate):
     adagrad = optimizers.Adagrad(lr =learning_rate)
 
 
+    if loss == "MSE":
+        loss = tensorflow.keras.losses.MeanSquaredError()
+    else:
+        loss = cosine_loss
+    
+    if optimizer == "SGD":
+        optimizer = sgd
+    else:
+        optimizer = adam
+
     #Compile the model
-    model.compile(loss = tensorflow.keras.losses.MeanAbsoluteError(), optimizer = adam, metrics=['mse'])
-        
+    model.compile(loss = loss, optimizer = optimizer, metrics=['mse'])
+
     return model
 
 
@@ -230,7 +262,7 @@ def conv_1D_cross(dim, source_Y, learning_rate):
 '''Recurent Neural Network Models'''
 
 
-def vanilla_LSTM(dim,  units, source_Y, cell_type, learning_rate):
+def vanilla_LSTM(dim,  units, source_Y, cell_type, learning_rate, loss, optimizer):
 
     _, window, features = dim
     model = Sequential()
@@ -254,9 +286,19 @@ def vanilla_LSTM(dim,  units, source_Y, cell_type, learning_rate):
     rmsprop = optimizers.RMSprop(lr = learning_rate)
 
 
+    if loss == "MSE":
+        loss = tensorflow.keras.losses.MeanSquaredError()
+    else:
+        loss = cosine_loss
+    
+    if optimizer == "SGD":
+        optimizer = sgd
+    else:
+        optimizer = adam
+
     #Compile the model
-    model.compile(loss= tensorflow.keras.losses.mse, optimizer = adam, metrics=['mse'])
-        
+    model.compile(loss = loss, optimizer = optimizer, metrics=['mse'])
+
 
     return model
 
@@ -325,7 +367,7 @@ def vanilla_LSTM_cross_hp(hp):
 #Hybrid Models
 ########################
 
-def conv_lstm( dim, source_Y, learning_rate):
+def conv_lstm( dim, source_Y, learning_rate, loss, optimizer):
    
 
     _, window, features = dim
@@ -371,15 +413,25 @@ def conv_lstm( dim, source_Y, learning_rate):
     rmsprop = optimizers.RMSprop(lr = learning_rate)
 
 
+    if loss == "MSE":
+        loss = tensorflow.keras.losses.MeanSquaredError()
+    else:
+        loss = cosine_loss
+    
+    if optimizer == "SGD":
+        optimizer = sgd
+    else:
+        optimizer = adam
+
     #Compile the model
-    model.compile(loss = tensorflow.keras.losses.MeanSquaredError(), optimizer = adam, metrics=['mse'])
-        
+    model.compile(loss = loss, optimizer = optimizer, metrics=['mse'])
+
     return model
 
 
 
 
-def combined_model(dim,  units, source_Y, cell_type, learning_rate):
+def combined_model(dim,  units, source_Y, cell_type, learning_rate, loss, optimizer):
    
 
     _, window, features = dim
@@ -438,11 +490,22 @@ def combined_model(dim,  units, source_Y, cell_type, learning_rate):
     sgd = optimizers.SGD(learning_rate)
     adam = optimizers.Adam(lr = learning_rate)
     rmsprop = optimizers.RMSprop(lr = learning_rate)
-
-
+    
     model = Model([input_1, input_2], output)
+
+
+    if loss == "MSE":
+        loss = tensorflow.keras.losses.MeanSquaredError()
+    else:
+        loss = cosine_loss
+    
+    if optimizer == "SGD":
+        optimizer = sgd
+    else:
+        optimizer = adam
+
     #Compile the model
-    model.compile(loss = tensorflow.keras.losses.MeanSquaredError(), optimizer = adam, metrics=['mse'])
+    model.compile(loss = loss, optimizer = optimizer, metrics=['mse'])
         
     return model
 
@@ -450,7 +513,7 @@ def combined_model(dim,  units, source_Y, cell_type, learning_rate):
 
 
 
-def LSTM_autoencoder(dim,  units, source_Y, cell_type, learning_rate, teacher_force):
+def LSTM_autoencoder(dim,  units, source_Y, cell_type, learning_rate, teacher_force, loss, optimizer):
     _, window, features = dim
    
     
@@ -556,16 +619,24 @@ def LSTM_autoencoder(dim,  units, source_Y, cell_type, learning_rate, teacher_fo
         model = Model([encoder_inputs, decoder_inputs], decoder_outputs, name='train_model')
 
 
-
     #Set up the Optimizers
     sgd = optimizers.SGD(learning_rate)
-    adam = optimizers.Adam(learning_rate)
-   
+    adam = optimizers.Adam(lr = learning_rate)
+    rmsprop = optimizers.RMSprop(lr = learning_rate)
+    
+
+    if loss == "MSE":
+        loss = tensorflow.keras.losses.MeanSquaredError()
+    else:
+        loss = cosine_loss
+    
+    if optimizer == "SGD":
+        optimizer = sgd
+    else:
+        optimizer = adam
+
     #Compile the model
-    model.compile(loss =  tensorflow.keras.losses.MeanSquaredError() , optimizer = adam, metrics=['mse'])
- 
-
-
+    model.compile(loss = loss, optimizer = optimizer, metrics=['mse'])
 
     # return all models
     return model, encoder_model

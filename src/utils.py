@@ -86,7 +86,7 @@ def sanity_check(true, pred):
         #not so true when z_score_outputs is true, because the 2nd dimension was z-scored, the first wasn't
         #and, not so true with fake_data, i.e. when the signal is simple. The 'cheat' is only used for real EEG data.
         #plt.xlim(100,150)
-
+        plt.figure()
 
 class TrainValTensorBoard(TensorBoard):
     def __init__(self, log_dir='./logs', **kwargs):

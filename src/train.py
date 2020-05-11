@@ -13,6 +13,7 @@ from metrics import compute_correlation, list_correlation, mean_squared_loss, co
 from tensorflow.keras.callbacks import ReduceLROnPlateau
 from utils import plot_multistep_prediction, plot_loss_curve, sanity_check, plot_r_horizon
 from numpy import savez_compressed
+import matplotlib.pyplot as plt
 import numpy as np
 from tqdm import tqdm
 from kerastuner import RandomSearch
@@ -153,20 +154,21 @@ if __name__ == "__main__":
             callback_checkpoint = ModelCheckpoint("../models/{}/{}_best_model.h5".format(model_name, model_name), monitor='val_loss', save_best_only=True, verbose = 1)
         
             
-
+            wandb.config.loss = "MSE"
+            wandb.config.optimizer = "SGD"
 
             ############################
             #Compile the model 
             ############################
             model = get_model()[model_name]
             if model_name == "LSTM" or model_name=="conv_LSTM" or model_name == "combined_model":
-                model = model(train_X.shape, units, train_Y.shape[-1], cell_type, learning_rate)
+                model = model(train_X.shape, units, train_Y.shape[-1], cell_type, learning_rate,  wandb.config.loss, wandb.config.optimizer)
             elif model_name =="LSTM_autoencoder":
-                model, encoder_model = model(train_X.shape, units, train_Y.shape[-1], cell_type, learning_rate, teacher_force)
+                model, encoder_model = model(train_X.shape, units, train_Y.shape[-1], cell_type, learning_rate, teacher_force,  wandb.config.loss, wandb.config.optimizer)
             elif model_name == "CNN" or model_name =="CNN_cross":
-                model = model(train_X.shape, train_Y.shape[-1], learning_rate)
+                model = model(train_X.shape, train_Y.shape[-1], learning_rate,  wandb.config.loss, wandb.config.optimizer)
             elif model_name =="LR":
-                model = model(train_X.shape, learning_rate)
+                model = model(train_X.shape, learning_rate,  wandb.config.loss, wandb.config.optimizer)
             else:
                 model = model 
             
@@ -257,8 +259,10 @@ if __name__ == "__main__":
 
   
     #Load Best Checkpoint Model using Early Stopping 
-    #model = load_model('../models/{}/{}_best_model.h5'.format(model_name, model_name), custom_objects={"cosine_loss":cosine_loss} )
-    model = load_model('../models/{}/{}_best_model.h5'.format(model_name, model_name))
+    if not wandb.config.loss == "MSE":
+        model = load_model('../models/{}/{}_best_model.h5'.format(model_name, model_name), custom_objects={"cosine_loss":cosine_loss} )
+    else:
+        model = load_model('../models/{}/{}_best_model.h5'.format(model_name, model_name))
    
     plot_model(model, "../images/{}_model.png".format(model_name), True, True)
     print(model.summary())
@@ -373,6 +377,15 @@ if __name__ == "__main__":
     wandb.log({"sanity_check_prediction_horizon":  wandb.Image("../images/sanity_check_prediction_horizon.png")})
     
     wandb.log({"corr_value": corr})
+
+    time = np.arange(0, 160)
+    plt.plot(time, corr)
+    wandb.log({"corr_plot": plt})
+    plt.figure()
+
+   
+
+
 
 
 
