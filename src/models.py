@@ -541,7 +541,7 @@ def LSTM_autoencoder(dim,  units, source_Y, cell_type, learning_rate, teacher_fo
     # define training decoder
     if teacher_force:
       decoder_outputs, _, _ = decoder(encoder_outputs, initial_state=encoder_states)
-      decoder_dense = Dense(features)
+      decoder_dense = Dense(1)
       decoder_outputs = decoder_dense(decoder_outputs)
     else:
       decoder_outputs = build_static_loop(encoder_states, decoder_inputs, decoder)

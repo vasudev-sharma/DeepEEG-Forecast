@@ -371,6 +371,8 @@ if __name__ == "__main__":
     "sanity_check_prediction_batch":  wandb.Image("../images/sanity_check_prediction_batch.png")})
 
     wandb.log({"sanity_check_prediction_horizon":  wandb.Image("../images/sanity_check_prediction_horizon.png")})
+    
+    wandb.log({"corr_value": corr})
 
 
 

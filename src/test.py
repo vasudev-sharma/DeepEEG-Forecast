@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 import wandb
 
 # Your custom arguments defined here
-args = ...
+
 
 if __name__ == "__main__":
 

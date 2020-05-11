@@ -128,6 +128,7 @@ def plot_r_horizon(corr):
     time = np.arange(0, 160)
     plt.plot(time, corr)
     plt.savefig("Prediction.png")
+    plt.figure()
 
   #Graphical Display to plot weights
 def plot_weights(weights, electi, window):
