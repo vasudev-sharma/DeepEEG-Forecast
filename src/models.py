@@ -562,7 +562,7 @@ def LSTM_autoencoder(dim,  units, source_Y, cell_type, learning_rate, teacher_fo
     adam = optimizers.Adam(learning_rate)
    
     #Compile the model
-    model.compile(loss = cosine_loss , optimizer = adam, metrics=['mse'])
+    model.compile(loss =  tensorflow.keras.losses.MeanSquaredError() , optimizer = adam, metrics=['mse'])
  
 
 

@@ -249,10 +249,10 @@ if __name__ == "__main__":
 
   
     #Load Best Checkpoint Model using Early Stopping 
-    model = load_model('../models/{}/{}_best_model.h5'.format(model_name, model_name), custom_objects={"cosine_loss":cosine_loss} )
-
+    #model = load_model('../models/{}/{}_best_model.h5'.format(model_name, model_name), custom_objects={"cosine_loss":cosine_loss} )
+    model = load_model('../models/{}/{}_best_model.h5'.format(model_name, model_name))
    
-    plot_model(model, "../images/{}_model.png".format(model_name))
+    plot_model(model, "../images/{}_model.png".format(model_name), True, True)
     print(model.summary())
 
 

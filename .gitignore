@@ -19,3 +19,6 @@ input/
 
 #Ignore the experiment Files for hyper parameter tuning 
 src/experiment/
+
+#Ignore wandb runs
+wandb/

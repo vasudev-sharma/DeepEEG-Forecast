@@ -1,7 +1,7 @@
 #!/bin/bash
 echo "This script is about to run another script."
 
-for i in `seq 1 5`
+for i in `seq 1 1`
 do
     export experiment_no=$i
     sh ./run.sh
