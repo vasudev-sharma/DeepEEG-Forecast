@@ -1,5 +1,6 @@
 import os
-
+import wandb
+from wandb.keras import WandbCallback
 import json
 from tensorflow.keras import optimizers
 from input import data, teacher_forcing
@@ -10,7 +11,7 @@ from predict import predict_single_timestep, predict_multi_timestep, predict_aut
 from models import get_model, build_prediction_model
 from metrics import compute_correlation, list_correlation, mean_squared_loss, cosine_loss
 from tensorflow.keras.callbacks import ReduceLROnPlateau
-from utils import plot_multistep_prediction, plot_loss_curve, sanity_check
+from utils import plot_multistep_prediction, plot_loss_curve, sanity_check, plot_r_horizon
 from numpy import savez_compressed
 import numpy as np
 from tqdm import tqdm
@@ -62,6 +63,7 @@ if __name__ == "__main__":
         split = False 
         
 
+
     
 
     print("The predicted value is ", pred)
@@ -94,6 +96,12 @@ if __name__ == "__main__":
         teacher_force = bool(parameters["teacher_force"])
 
 
+    #######
+    #LOG Congif Parameters
+    #######
+    
+    wandb.init(config=parameters, project= "input_task_" + input_task  + "_" +  "stimulus_" + stimulus + "_" + "Prediction_" + pred + "_" + "Model_name_" + model_name + "_" + "Horizon_" + str(horizon) + "_" + "Output_type_" + MIMO_output )
+    
 
     if model_name == "LSTM_autoencoder":
       encoder_input_train, decoder_input_train, decoder_target_train = teacher_forcing(train_X, train_Y)
@@ -141,7 +149,7 @@ if __name__ == "__main__":
             ####################################
             # Callbacks    
             ###################################
-            callback_early_stopping = EarlyStopping(monitor='val_loss', verbose=1, patience=100)
+            callback_early_stopping = EarlyStopping(monitor='val_loss', verbose=1, patience=20)
             callback_checkpoint = ModelCheckpoint("../models/{}/{}_best_model.h5".format(model_name, model_name), monitor='val_loss', save_best_only=True, verbose = 1)
         
             
@@ -205,7 +213,7 @@ if __name__ == "__main__":
                         epochs = training_epochs, 
                         validation_data = (input_valid, output_valid), 
                         verbose = 1,
-                        callbacks = [callback_early_stopping, callback_checkpoint],
+                        callbacks = [callback_early_stopping, callback_checkpoint, WandbCallback()],
                         shuffle = True
                         )
 
@@ -219,7 +227,7 @@ if __name__ == "__main__":
                         epochs = training_epochs, 
                         validation_data = ([valid_X[:, :, 0].reshape(valid_X.shape[0], valid_X.shape[1], 1),valid_X[:, :, 1].reshape(valid_X.shape[0], valid_X.shape[1], 1) ]  , valid_Y), 
                         verbose = 1,
-                        callbacks = [callback_early_stopping, callback_checkpoint],
+                        callbacks = [callback_early_stopping, callback_checkpoint, WandbCallback()],
                         shuffle = True
                         )
             
@@ -232,7 +240,7 @@ if __name__ == "__main__":
                         epochs = training_epochs, 
                         validation_data = (valid_X  , valid_Y), 
                         verbose = 1,
-                        callbacks = [callback_early_stopping, callback_checkpoint],
+                        callbacks = [callback_early_stopping, callback_checkpoint, WandbCallback()],
                         shuffle = True
                         )
             
@@ -310,6 +318,10 @@ if __name__ == "__main__":
         #R value of a single electrode for all the time steps
         corr = list_correlation(true_elec, pred_elec)
 
+        plot_r_horizon(corr)
+         
+       
+
         print("The value of correlation is for electrode 63 is {}". format(corr))
 
         
@@ -349,6 +361,18 @@ if __name__ == "__main__":
     
     #Perform sanity check to check the model is performing the correct prediction over future time steps horzizons and over certi
     sanity_check(test_Y, predictions)
+
+
+    #Log the images
+    wandb.log({
+    "Prediction_horizon":  wandb.Image("./Prediction_horizon.png")})
+
+    wandb.log({
+    "sanity_check_prediction_batch":  wandb.Image("../images/sanity_check_prediction_batch.png")})
+
+    wandb.log({"sanity_check_prediction_horizon":  wandb.Image("../images/sanity_check_prediction_horizon.png")})
+
+
 
 
     if flag_tuning == False:

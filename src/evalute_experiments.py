@@ -2,6 +2,7 @@ import json
 import numpy as np
 from utils import compare_models
 import matplotlib.pyplot as plt
+import wandb
 
 
 with open("experiment_log.json", "r") as read_file:
@@ -26,6 +27,8 @@ with open("models.json", "a") as write_file:
         time = np.arange(0, 160)
         plt.errorbar(time, mean, std)
         plt.savefig("Prediction_horizon.png")
+
+       
         json.dump(mean.tolist(), write_file)
         write_file.write("\n")
         json.dump(std.tolist(), write_file)
