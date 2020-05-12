@@ -125,10 +125,13 @@ class TrainValTensorBoard(TensorBoard):
         self.val_writer.close()
   
 def plot_r_horizon(corr):
-    time = np.arange(0, 160)
-    plt.plot(time, corr)
-    plt.savefig("Prediction.png")
-    plt.figure()
+    if len(corr) > 1:
+        time = np.arange(0, 160)
+        plt.plot(time, corr)
+        plt.savefig("Prediction.png")
+        plt.figure()
+    else:
+        return
 
   #Graphical Display to plot weights
 def plot_weights(weights, electi, window):

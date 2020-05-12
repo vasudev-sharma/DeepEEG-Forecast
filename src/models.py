@@ -269,7 +269,7 @@ def vanilla_LSTM(dim,  units, source_Y, cell_type, learning_rate, loss, optimize
     model.add(Input( (window, features)))
     print(features)
     if cell_type == "LSTM":
-        model.add(LSTM(units, return_sequences=True))
+        model.add(LSTM(units))
         #model.add(LSTM(units, return_sequences= True))
     elif cell_type == "RNN":
         model.add(SimpleRNN(units))
@@ -285,16 +285,20 @@ def vanilla_LSTM(dim,  units, source_Y, cell_type, learning_rate, loss, optimize
     adam = optimizers.Adam(lr = learning_rate)
     rmsprop = optimizers.RMSprop(lr = learning_rate)
 
-
     if loss == "MSE":
-        loss = tensorflow.keras.losses.MeanSquaredError()
+        print("MSE Loss is used")
+        loss = tensorflow.keras.losses.MSE
     else:
+        print("Cosine loss is used")
         loss = cosine_loss
     
     if optimizer == "SGD":
+        print("SGD optimizer is used")
         optimizer = sgd
     else:
+        print("Adam optimizer is used")
         optimizer = adam
+
 
     #Compile the model
     model.compile(loss = loss, optimizer = optimizer, metrics=['mse'])
@@ -627,7 +631,7 @@ def LSTM_autoencoder(dim,  units, source_Y, cell_type, learning_rate, teacher_fo
 
     if loss == "MSE":
         print("MSE Loss is used")
-        loss = tensorflow.keras.losses.MeanSquaredError()
+        loss = tensorflow.keras.losses.MSE
     else:
         print("Cosine loss is used")
         loss = cosine_loss

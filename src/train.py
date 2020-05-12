@@ -150,12 +150,13 @@ if __name__ == "__main__":
             ####################################
             # Callbacks    
             ###################################
-            callback_early_stopping = EarlyStopping(monitor='val_loss', verbose=1, patience=20)
+            '''
+            callback_early_stopping = EarlyStopping(monitor='val_loss', verbose=1, patience=100)
             callback_checkpoint = ModelCheckpoint("../models/{}/{}_best_model.h5".format(model_name, model_name), monitor='val_loss', save_best_only=True, verbose = 1)
-        
+            '''
             
-            wandb.config.loss = "Cosine_loss"
-            wandb.config.optimizer = "SGD"
+            wandb.config.loss = "MSE"
+            wandb.config.optimizer = "Adam"
 
             ############################
             #Compile the model 
@@ -215,9 +216,10 @@ if __name__ == "__main__":
                         epochs = training_epochs, 
                         validation_data = (input_valid, output_valid), 
                         verbose = 1,
-                        callbacks = [callback_early_stopping, callback_checkpoint, WandbCallback()],
+                        callbacks = [ WandbCallback()],
                         shuffle = True
                         )
+                    #callback_early_stopping, callback_checkpoint,
 
             elif model_name == "combined_model":
 
@@ -257,13 +259,15 @@ if __name__ == "__main__":
             plot_loss_curve(history)
 
 
-  
+    '''
     #Load Best Checkpoint Model using Early Stopping 
     if not wandb.config.loss == "MSE":
+        print("Cosine loss is used")
         model = load_model('../models/{}/{}_best_model.h5'.format(model_name, model_name), custom_objects={"cosine_loss":cosine_loss} )
     else:
+        print("MSE loss is used")
         model = load_model('../models/{}/{}_best_model.h5'.format(model_name, model_name))
-   
+    '''
     plot_model(model, "../images/{}_model.png".format(model_name), True, True)
     print(model.summary())
 
@@ -343,7 +347,8 @@ if __name__ == "__main__":
         corr = list_correlation(predictions, test_Y)           #List of r value of all the the electrodes 
 
         print(corr)
-            
+        plot_r_horizon(corr)
+
     
     
     with open("corr_dat.json", "a") as write_file:
@@ -366,7 +371,7 @@ if __name__ == "__main__":
     #Perform sanity check to check the model is performing the correct prediction over future time steps horzizons and over certi
     sanity_check(test_Y, predictions)
 
-
+    
     #Log the images
 
     wandb.log({
@@ -375,7 +380,7 @@ if __name__ == "__main__":
     wandb.log({"sanity_check_prediction_horizon":  wandb.Image("../images/sanity_check_prediction_horizon.png")})
     
     for i in range(160):
-        wandb.log({"corr_value": corr[i]}, step = i)
+        wandb.log({"corr_value": corr[i]})
 
 
     wandb.log({"corr_list": corr})
@@ -385,6 +390,10 @@ if __name__ == "__main__":
     plt.plot(time, corr)
     wandb.log({"corr_plot": plt})
     plt.figure()
+
+    wandb.log({
+    "Prediction_horizon":  wandb.Image("./Prediction.png")})
+
 
    
 
