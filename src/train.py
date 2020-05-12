@@ -154,7 +154,7 @@ if __name__ == "__main__":
             callback_checkpoint = ModelCheckpoint("../models/{}/{}_best_model.h5".format(model_name, model_name), monitor='val_loss', save_best_only=True, verbose = 1)
         
             
-            wandb.config.loss = "MSE"
+            wandb.config.loss = "Cosine_loss"
             wandb.config.optimizer = "SGD"
 
             ############################
@@ -368,15 +368,18 @@ if __name__ == "__main__":
 
 
     #Log the images
-    wandb.log({
-    "Prediction_horizon":  wandb.Image("./Prediction_horizon.png")})
 
     wandb.log({
     "sanity_check_prediction_batch":  wandb.Image("../images/sanity_check_prediction_batch.png")})
 
     wandb.log({"sanity_check_prediction_horizon":  wandb.Image("../images/sanity_check_prediction_horizon.png")})
     
-    wandb.log({"corr_value": corr})
+    for i in range(160):
+        wandb.log({"corr_value": corr[i]}, step = i)
+
+
+    wandb.log({"corr_list": corr})
+
 
     time = np.arange(0, 160)
     plt.plot(time, corr)
