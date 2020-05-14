@@ -11,3 +11,4 @@ wget --no-check-certificate 'https://docs.google.com/uc?export=download&id=1lA9m
 cd ../src/
 mkdir experiment
 wandb login
+202040aaac395bbf5a4a47d433a5335b74b7fb0e
