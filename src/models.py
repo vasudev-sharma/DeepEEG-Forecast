@@ -12,7 +12,7 @@ from metrics import cosine_loss, mean_squared_loss
 def linear_regression(dim, learning_rate, loss, optimizer):
 
     _, features = dim 
-    out_features = features / 160
+    out_features = 160
 
   
 
@@ -24,16 +24,19 @@ def linear_regression(dim, learning_rate, loss, optimizer):
     adam = optimizers.Adam(lr = learning_rate)
     rmsprop = optimizers.RMSprop(lr = learning_rate)
 
-
     
     if loss == "MSE":
-        loss = tensorflow.keras.losses.MeanSquaredError()
+        print("MSE Loss is used")
+        loss = tensorflow.keras.losses.MSE
     else:
+        print("Cosine loss is used")
         loss = cosine_loss
     
     if optimizer == "SGD":
+        print("SGD optimizer is used")
         optimizer = sgd
     else:
+        print("Adam optimizer is used")
         optimizer = adam
 
     #Compile the model
@@ -87,16 +90,20 @@ def conv_1D(dim, source_Y, learning_rate, loss, optimizer):
     rmsprop = optimizers.RMSprop(lr = learning_rate)
     adagrad = optimizers.Adagrad(lr =learning_rate)
 
-
     if loss == "MSE":
-        loss = tensorflow.keras.losses.MeanSquaredError()
+        print("MSE Loss is used")
+        loss = tensorflow.keras.losses.MSE
     else:
+        print("Cosine loss is used")
         loss = cosine_loss
     
     if optimizer == "SGD":
+        print("SGD optimizer is used")
         optimizer = sgd
     else:
+        print("Adam optimizer is used")
         optimizer = adam
+
 
     #Compile the model
     model.compile(loss = loss, optimizer = optimizer, metrics=['mse'])
@@ -232,7 +239,8 @@ def conv_1D_cross(dim, source_Y, learning_rate, loss, optimizer):
     
     Flatten(),
   
-    Dense(1, activation = "linear", kernel_initializer = 'normal')
+   
+    Dense(160, activation = "linear", kernel_initializer = 'normal')
     ])
     #Set up the Optimizers
     sgd = optimizers.SGD(learning_rate)
@@ -240,15 +248,18 @@ def conv_1D_cross(dim, source_Y, learning_rate, loss, optimizer):
     rmsprop = optimizers.RMSprop(lr = learning_rate)
     adagrad = optimizers.Adagrad(lr =learning_rate)
 
-
     if loss == "MSE":
-        loss = tensorflow.keras.losses.MeanSquaredError()
+        print("MSE Loss is used")
+        loss = tensorflow.keras.losses.MSE
     else:
+        print("Cosine loss is used")
         loss = cosine_loss
     
     if optimizer == "SGD":
+        print("SGD optimizer is used")
         optimizer = sgd
     else:
+        print("Adam optimizer is used")
         optimizer = adam
 
     #Compile the model
@@ -418,14 +429,19 @@ def conv_lstm( dim, source_Y, learning_rate, loss, optimizer):
 
 
     if loss == "MSE":
-        loss = tensorflow.keras.losses.MeanSquaredError()
+        print("MSE Loss is used")
+        loss = tensorflow.keras.losses.MSE
     else:
+        print("Cosine loss is used")
         loss = cosine_loss
     
     if optimizer == "SGD":
+        print("SGD optimizer is used")
         optimizer = sgd
     else:
+        print("Adam optimizer is used")
         optimizer = adam
+
 
     #Compile the model
     model.compile(loss = loss, optimizer = optimizer, metrics=['mse'])
@@ -499,13 +515,17 @@ def combined_model(dim,  units, source_Y, cell_type, learning_rate, loss, optimi
 
 
     if loss == "MSE":
-        loss = tensorflow.keras.losses.MeanSquaredError()
+        print("MSE Loss is used")
+        loss = tensorflow.keras.losses.MSE
     else:
+        print("Cosine loss is used")
         loss = cosine_loss
     
     if optimizer == "SGD":
+        print("SGD optimizer is used")
         optimizer = sgd
     else:
+        print("Adam optimizer is used")
         optimizer = adam
 
     #Compile the model

@@ -150,13 +150,13 @@ if __name__ == "__main__":
             ####################################
             # Callbacks    
             ###################################
-            '''
+            
             callback_early_stopping = EarlyStopping(monitor='val_loss', verbose=1, patience=100)
             callback_checkpoint = ModelCheckpoint("../models/{}/{}_best_model.h5".format(model_name, model_name), monitor='val_loss', save_best_only=True, verbose = 1)
-            '''
+            
             
             wandb.config.loss = "MSE"
-            wandb.config.optimizer = "Adam"
+            wandb.config.optimizer = "SGD"
 
             ############################
             #Compile the model 
@@ -216,7 +216,7 @@ if __name__ == "__main__":
                         epochs = training_epochs, 
                         validation_data = (input_valid, output_valid), 
                         verbose = 1,
-                        callbacks = [ WandbCallback()],
+                        callbacks = [ callback_early_stopping, callback_checkpoint, WandbCallback()],
                         shuffle = True
                         )
                     #callback_early_stopping, callback_checkpoint,
@@ -259,7 +259,7 @@ if __name__ == "__main__":
             plot_loss_curve(history)
 
 
-    '''
+    
     #Load Best Checkpoint Model using Early Stopping 
     if not wandb.config.loss == "MSE":
         print("Cosine loss is used")
@@ -267,7 +267,7 @@ if __name__ == "__main__":
     else:
         print("MSE loss is used")
         model = load_model('../models/{}/{}_best_model.h5'.format(model_name, model_name))
-    '''
+    
     plot_model(model, "../images/{}_model.png".format(model_name), True, True)
     print(model.summary())
 
@@ -315,10 +315,13 @@ if __name__ == "__main__":
         print("Shape of true  is", test_Y.shape)
         print("Shape of pred  is ", predictions.shape)
 
-        #Actual and Predicted values for Single electrode mutistep 
-        true_elec = test_Y[:, :, 0]
-        pred_elec = predictions[:, :, 0]
-
+        if len(test_Y.shape) == 3 and len(predictions.shape) == 3:
+            #Actual and Predicted values for Single electrode mutistep 
+            true_elec = test_Y[:, :, 0]
+            pred_elec = predictions[:, :, 0]
+        else: 
+            true_elec = test_Y
+            pred_elec = predictions
 
         print("Shape of true elec is", true_elec.shape)
         print("Shape of pred elec is ", pred_elec.shape)
@@ -364,12 +367,13 @@ if __name__ == "__main__":
 
         
         if model_name == "LR":
+            if not multivariate:
              weights = np.array(model.get_weights())
              plot_weights(weights, pred, window)
         
     
     #Perform sanity check to check the model is performing the correct prediction over future time steps horzizons and over certi
-    sanity_check(test_Y, predictions)
+    sanity_check(test_Y, predictions, MIMO_output)
 
     
     #Log the images

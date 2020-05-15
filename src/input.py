@@ -65,8 +65,9 @@ def extract_Y (data, window, source, batch_trials, horizon = 1, multivariate = F
         y_tmp.append(tmp)
       y[idx] = np.vstack(y_tmp)
 
-    if multivariate:
-      y= np.moveaxis(y, 0, -1)                                                  
+    if multivariate and model_name != "LR" and model_name!= "CNN_cross":
+      y= np.moveaxis(y, 0, -1)  
+                                                
     else: 
       y = np.hstack(y) 
     return(y) 
