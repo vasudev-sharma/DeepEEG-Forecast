@@ -384,7 +384,7 @@ if __name__ == "__main__":
     wandb.log({"sanity_check_prediction_horizon":  wandb.Image("../images/sanity_check_prediction_horizon.png")})
     
     for i in range(160):
-        wandb.log({"corr_value": corr[i]})
+        wandb.log({"corr_value": corr[i], "global_step" :i})
 
 
     wandb.log({"corr_list": corr})
