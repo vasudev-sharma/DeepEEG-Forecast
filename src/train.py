@@ -1,7 +1,7 @@
 import os
-import wandb
-from wandb.keras import WandbCallback
+
 import json
+import tensorflow
 from tensorflow.keras import optimizers
 from input import data, teacher_forcing
 from tensorflow.keras.models import load_model
@@ -14,6 +14,8 @@ from tensorflow.keras.callbacks import ReduceLROnPlateau
 from utils import plot_multistep_prediction, plot_loss_curve, sanity_check, plot_r_horizon
 from numpy import savez_compressed
 import matplotlib.pyplot as plt
+import wandb
+from wandb.keras import WandbCallback
 import numpy as np
 from tqdm import tqdm
 from kerastuner import RandomSearch
@@ -23,6 +25,17 @@ from utils import plot_weights
 
 import random 
 import string
+
+
+############################
+#Set the seed to produce consistent results
+###########################
+
+tensorflow.random.set_seed(0)
+random.seed(0)
+np.random.seed(0)
+
+
 
 pred = os.environ["pred"]
 stimulus = os.environ["stimulus"]
@@ -90,7 +103,7 @@ if __name__ == "__main__":
     
     units = parameters["units"]
     learning_rate = parameters["learning_rate"]
-    if(model_name == "LSTM" or model_name=="LSTM_hp"  or model_name=="conv_LSTM" or model_name == "combined_model"):
+    if(model_name == "LSTM" or model_name=="LSTM_hp"  or model_name=="conv_LSTM" or model_name == "combined_model" or model_name =="ES_RNN"):
         cell_type = parameters["cell_type"]
     if model_name == "LSTM_autoencoder":
         cell_type = parameters["cell_type"]
@@ -112,9 +125,11 @@ if __name__ == "__main__":
 
       if not teacher_force: #Set to False for not teacher forcing, set to True for Teacher_forcing 
         print("Teacher force is used")  
+        '''
         decoder_input_train = decoder_input_train[:, :1, :1]
         decoder_input_valid = decoder_input_valid[:, :1, :1]
         decoder_input_test = decoder_input_test[:, :1, :1]
+        '''
         input_train = [encoder_input_train, decoder_input_train]
         input_valid = [encoder_input_valid, decoder_input_valid]
         input_test = [encoder_input_test, decoder_input_test]
@@ -151,12 +166,12 @@ if __name__ == "__main__":
             # Callbacks    
             ###################################
             
-            callback_early_stopping = EarlyStopping(monitor='val_loss', verbose=1, patience=100)
-            callback_checkpoint = ModelCheckpoint("../models/{}/{}_best_model.h5".format(model_name, model_name), monitor='val_loss', save_best_only=True, verbose = 1)
+            callback_early_stopping = EarlyStopping(monitor='val_loss', verbose=1, patience=20, mode = 'min')
+            callback_checkpoint = ModelCheckpoint("../models/{}/{}_best_model.h5".format(model_name, model_name), mode = "min", monitor='val_loss', save_best_only=True, verbose = 1)
             
             
             wandb.config.loss = "MSE"
-            wandb.config.optimizer = "SGD"
+            wandb.config.optimizer = "Adam"
 
             ############################
             #Compile the model 
@@ -170,6 +185,8 @@ if __name__ == "__main__":
                 model = model(train_X.shape, train_Y.shape[-1], learning_rate,  wandb.config.loss, wandb.config.optimizer)
             elif model_name =="LR":
                 model = model(train_X.shape, learning_rate,  wandb.config.loss, wandb.config.optimizer)
+            elif model_name =="ES_RNN":
+                model = model(train_X.shape, units, train_Y.shape[-1], cell_type, learning_rate,  wandb.config.loss, wandb.config.optimizer, batch_size)
             else:
                 model = model 
             
@@ -245,7 +262,7 @@ if __name__ == "__main__":
                         validation_data = (valid_X  , valid_Y), 
                         verbose = 1,
                         callbacks = [callback_early_stopping, callback_checkpoint, WandbCallback()],
-                        shuffle = True
+                        shuffle = False
                         )
             
             

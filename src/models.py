@@ -6,6 +6,9 @@ from tensorflow.keras import optimizers
 import tensorflow.keras
 import tensorflow
 from metrics import cosine_loss, mean_squared_loss
+from tensorflow.keras.regularizers import L1L2
+from collections import UserDict, deque
+
 
 '''Linear Regression Models'''
 
@@ -215,38 +218,42 @@ def conv_1D_cross(dim, source_Y, learning_rate, loss, optimizer):
 
     _, window, features = dim
 
-  
+    print(features)
     model = Sequential([
 
-    Conv1D(input_shape = (window, features), filters = 2,  kernel_size = 5),
+    Conv1D(input_shape = (window, features), filters = 2,  kernel_size = 5 ),
+  
     ELU(),
     SpatialDropout1D(0.1),
     MaxPooling1D(pool_size= 2),
 
   
     
-    Conv1D(filters = 4 , kernel_size = 5),
+    Conv1D(filters = 4 ,  kernel_size = 3),
+ 
     ELU(),
     SpatialDropout1D(0.1),
     MaxPooling1D(pool_size= 2),
 
     
-    Conv1D(filters = 4,  kernel_size = 5),
+    Conv1D(filters = 4, kernel_size = 3),
     ELU(),
     SpatialDropout1D(0.1),
     MaxPooling1D(pool_size= 2),
 
-    
+
     Flatten(),
-  
    
     Dense(160, activation = "linear", kernel_initializer = 'normal')
+    
     ])
     #Set up the Optimizers
     sgd = optimizers.SGD(learning_rate)
     adam = optimizers.Adam(lr = learning_rate)
     rmsprop = optimizers.RMSprop(lr = learning_rate)
     adagrad = optimizers.Adagrad(lr =learning_rate)
+
+    print("Value of Optimzer is", optimizer)
 
     if loss == "MSE":
         print("MSE Loss is used")
@@ -258,7 +265,7 @@ def conv_1D_cross(dim, source_Y, learning_rate, loss, optimizer):
     if optimizer == "SGD":
         print("SGD optimizer is used")
         optimizer = sgd
-    else:
+    if optimizer == "Adam":
         print("Adam optimizer is used")
         optimizer = adam
 
@@ -603,31 +610,50 @@ def LSTM_autoencoder(dim,  units, source_Y, cell_type, learning_rate, teacher_fo
    
     encoder_inputs = Input(shape=(window, features), name='encoder_inputs')
     teacher_force = teacher_force
+    layers= [units]
     z_score_outputs = False
     if teacher_force:
       print("Model is using teacher forcing")
       decoder_inputs = Input(shape=(window, features), name='decoder_inputs')
     else:
       print("Model is not using teacher forcing")
-      decoder_inputs = Input(shape=(1, features), name='decoder_inputs')
+      decoder_inputs = Input(shape=(None, features), name='decoder_inputs')
 
     if teacher_force:
         encoder = LSTM(units, return_state=True)
     else:
-        encoder = LSTM(units, return_state=True,)
+        encoder_cells = []
+        for hidden_neurons in layers:
+            encoder_cells.append(tensorflow.keras.layers.LSTMCell(hidden_neurons))
+        encoder = tensorflow.keras.layers.RNN(encoder_cells, return_state=True)
 
-    decoder = LSTM(units, return_sequences=True, return_state=True)
 
-    encoder_outputs, state_h, state_c = encoder(encoder_inputs)
-    encoder_states = [state_h, state_c]
+    decoder_cells = []
+    for hidden_neurons in layers:
+        decoder_cells.append(tensorflow.keras.layers.LSTMCell(hidden_neurons))
+    decoder = tensorflow.keras.layers.RNN(decoder_cells, return_sequences = True, return_state=True)
+
+    encoder_outputs_and_states = encoder(encoder_inputs)
+
+    # Discard encoder outputs and only keep the states.
+    # The outputs are of no interest to us, the encoder's
+    # job is to create a state describing the input sequence.
+    encoder_states = encoder_outputs_and_states[1:]
+    
 
     encoder_model = Model(encoder_inputs, encoder_states)
 
     #encoder_states = format_encoder_states(cell_type, encoder_states, use_first=False)
 
     # define training decoder
-    if teacher_force:
-      decoder_outputs, _, _ = decoder(encoder_inputs, initial_state=encoder_states)
+    if not teacher_force:
+      # Set the initial state of the decoder to be the ouput state of the encoder.
+      # This is the fundamental part of the encoder-decoder.
+      decoder_outputs_and_states = decoder(decoder_inputs, initial_state=encoder_states)
+
+      # Only select the output of the decoder (not the states)
+      decoder_outputs = decoder_outputs_and_states[0]
+
       decoder_dense = Dense(1)
       decoder_outputs = decoder_dense(decoder_outputs)
     else:
@@ -791,6 +817,155 @@ def build_static_loop(init_states, decoder_inputs, decoder):
 
 
 
+def ES_RNN(dim, units, source_Y, cell_type, learning_rate, loss, optimizer, batch_size):
+
+    _, window, features = dim
+    horizon = 160
+    m = 180 #Seasonality length
+    model_input = Input(shape=(window, features))
+    [normalized_input, denormalization_coeff] = ES(horizon, m, batch_size, window)(model_input)
+    gru_out = GRU(units)(normalized_input)
+    model_output_normalized = Dense(horizon)(gru_out)
+    model_output = Denormalization()([model_output_normalized, denormalization_coeff])
+    model = Model(inputs=model_input, outputs=model_output)
+
+    #Set up the Optimizers
+    sgd = optimizers.SGD(learning_rate)
+    adam = optimizers.Adam(lr = learning_rate)
+    rmsprop = optimizers.RMSprop(lr = learning_rate)
+
+    if loss == "MSE":
+        print("MSE Loss is used")
+        loss = tensorflow.keras.losses.MSE
+    else:
+        print("Cosine loss is used")
+        loss = cosine_loss
+    
+    if optimizer == "SGD":
+        print("SGD optimizer is used")
+        optimizer = sgd
+    else:
+        print("Adam optimizer is used")
+        optimizer = adam
+
+
+    #Compile the model
+    model.compile(loss = loss, optimizer = optimizer, metrics=['mse'])
+
+
+    return model
+
+
+
+
+
+# Exponential Smoothing + Normalization
+class ES(Layer):
+
+    def __init__(self, horizon, m, batch_size, time_steps, **kwargs):
+        self.horizon = horizon
+        self.m = m
+        self.batch_size = batch_size
+        self.time_steps = time_steps
+        
+        super(ES, self).__init__(**kwargs)
+
+    # initialization of the learned parameters of exponential smoothing
+    def build(self, input_shape):
+        self.alpha = self.add_weight(name='alpha', shape=(1,),
+                                     initializer='uniform', trainable=True) 
+        self.gamma = self.add_weight(name='gamma', shape=(1,),
+                                     initializer='uniform', trainable=True)
+        self.init_seasonality = self.add_weight(name='init_seasonality', shape=(self.m,),
+                                                initializer=initializers.Constant(value=0.8), trainable=True)
+        self.init_seasonality_list = [tensorflow.slice(self.init_seasonality,(i,),(1,)) for i in range(self.m)]
+        self.seasonality_queue = deque(self.init_seasonality_list, self.m)
+        self.level = self.add_weight(name='init_level', shape=(1,),
+                                     initializer=initializers.Constant(value=0.8), 
+                                     trainable=True)
+        super(ES, self).build(input_shape)  
+
+
+    def call(self, x):
+
+        # extract time-series from feature vector
+        n_examples = tensorflow.keras.backend.int_shape(x)[0]
+        if n_examples is None:
+            n_examples = self.batch_size
+        x1 = tensorflow.slice(x,(0,0,0),(1,self.time_steps,1))
+        x1 = tensorflow.keras.backend.reshape(x1,(self.time_steps,))
+        x2 = tensorflow.slice(x,(1,self.time_steps-1,0),(n_examples-1,1,1))
+        x2 = tensorflow.keras.backend.reshape(x2,(n_examples-1,))
+        ts = tensorflow.keras.backend.concatenate([x1,x2])
+        
+        x_norm = []  # normalized values of time-series
+        ls = []      # coeffients for denormalization of forecasts
+        
+        l_t_minus_1 = self.level
+        
+        for i in range(n_examples+self.time_steps-1):
+        
+            # compute l_t
+            y_t = ts[i]
+            s_t = self.seasonality_queue.popleft()
+            l_t = self.alpha * y_t / s_t + (1 - self.alpha) * l_t_minus_1
+            
+            # compute s_{t+m}
+            s_t_plus_m = self.gamma * y_t / l_t + (1 - self.gamma) * s_t
+            
+            self.seasonality_queue.append(s_t_plus_m)
+            
+            # normalize y_t
+            x_norm.append(y_t / (s_t * l_t))
+
+            l_t_minus_1 = l_t
+
+            if i >= self.time_steps-1:
+                l = [l_t]*self.horizon
+                l = tensorflow.keras.backend.concatenate(l)
+                s = [self.seasonality_queue[i] for i in range(self.horizon)] # we assume here that horizon < m
+                s = tensorflow.keras.backend.concatenate(s)
+                ls_t = tensorflow.keras.backend.concatenate([tensorflow.keras.backend.expand_dims(l), tensorflow.keras.backend.expand_dims(s)])
+                ls.append(tensorflow.keras.backend.expand_dims(ls_t,axis=0))  
+       
+        self.level = l_t
+        x_norm = tensorflow.keras.backend.concatenate(x_norm)
+
+        # create x_out
+        x_out = []
+        for i in range(n_examples):
+            norm_features = tensorflow.slice(x_norm,(i,),(self.time_steps,))
+            norm_features = tensorflow.keras.backend.expand_dims(norm_features,axis=0)
+            x_out.append(norm_features)
+
+        x_out = tensorflow.keras.backend.concatenate(x_out, axis=0)
+        x_out = tensorflow.keras.backend.expand_dims(x_out)
+
+        # create tensor of denormalization coefficients 
+        denorm_coeff = tensorflow.keras.backend.concatenate(ls, axis=0)
+        return [x_out, denorm_coeff]
+
+    def compute_output_shape(self, input_shape):
+        return [(input_shape[0], input_shape[1], input_shape[2]), (input_shape[0], self.horizon, 2)]
+    
+class Denormalization(Layer):
+    
+    def __init__(self, **kwargs):
+        super(Denormalization, self).__init__(**kwargs)
+
+    def build(self, input_shape):
+        super(Denormalization, self).build(input_shape)  
+
+    def call(self, x):
+        return x[0] * x[1][:,:,0] * x[1][:,:,1]
+
+    def compute_output_shape(self, input_shape):
+        return input_shape[0]
+
+
+
+
+
 
 
 
@@ -808,6 +983,7 @@ def get_model():
             "CNN_cross":conv_1D_cross,
             "LSTM_autoencoder":LSTM_autoencoder,
             "conv_lstm":conv_lstm,
-            "combined_model":combined_model
+            "combined_model":combined_model,
+            "ES_RNN":ES_RNN
             }
   return MODELS
