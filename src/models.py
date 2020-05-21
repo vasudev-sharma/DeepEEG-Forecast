@@ -30,7 +30,7 @@ def linear_regression(dim, learning_rate, loss, optimizer):
     
     if loss == "MSE":
         print("MSE Loss is used")
-        loss = tensorflow.keras.losses.MSE
+        loss = tensorflow.keras.losses.MSLE
     else:
         print("Cosine loss is used")
         loss = cosine_loss
@@ -221,22 +221,21 @@ def conv_1D_cross(dim, source_Y, learning_rate, loss, optimizer):
     print(features)
     model = Sequential([
 
-    Conv1D(input_shape = (window, features), filters = 2,  kernel_size = 5 ),
-  
+    Conv1D(input_shape = (window, features) ,filters = 2,  kernel_size = 5 ),
     ELU(),
     SpatialDropout1D(0.1),
     MaxPooling1D(pool_size= 2),
 
   
     
-    Conv1D(filters = 4 ,  kernel_size = 3),
+    Conv1D(filters = 4  , kernel_size = 3),
  
     ELU(),
     SpatialDropout1D(0.1),
     MaxPooling1D(pool_size= 2),
 
     
-    Conv1D(filters = 4, kernel_size = 3),
+    Conv1D(filters = 4 ,kernel_size = 3),
     ELU(),
     SpatialDropout1D(0.1),
     MaxPooling1D(pool_size= 2),
@@ -610,36 +609,23 @@ def LSTM_autoencoder(dim,  units, source_Y, cell_type, learning_rate, teacher_fo
    
     encoder_inputs = Input(shape=(window, features), name='encoder_inputs')
     teacher_force = teacher_force
-    layers= [units]
     z_score_outputs = False
     if teacher_force:
       print("Model is using teacher forcing")
-      decoder_inputs = Input(shape=(window, features), name='decoder_inputs')
+      decoder_inputs = Input(shape=(1, features), name='decoder_inputs')
     else:
       print("Model is not using teacher forcing")
-      decoder_inputs = Input(shape=(None, features), name='decoder_inputs')
+      decoder_inputs = Input(shape=(window, features), name='decoder_inputs')
 
     if teacher_force:
         encoder = LSTM(units, return_state=True)
     else:
-        encoder_cells = []
-        for hidden_neurons in layers:
-            encoder_cells.append(tensorflow.keras.layers.LSTMCell(hidden_neurons))
-        encoder = tensorflow.keras.layers.RNN(encoder_cells, return_state=True)
+        encoder = LSTM(units, return_state=True)
 
+    decoder = LSTM(units, return_sequences=True, return_state=True)
 
-    decoder_cells = []
-    for hidden_neurons in layers:
-        decoder_cells.append(tensorflow.keras.layers.LSTMCell(hidden_neurons))
-    decoder = tensorflow.keras.layers.RNN(decoder_cells, return_sequences = True, return_state=True)
-
-    encoder_outputs_and_states = encoder(encoder_inputs)
-
-    # Discard encoder outputs and only keep the states.
-    # The outputs are of no interest to us, the encoder's
-    # job is to create a state describing the input sequence.
-    encoder_states = encoder_outputs_and_states[1:]
-    
+    encoder_outputs, state_h, state_c = encoder(encoder_inputs)
+    encoder_states = [state_h, state_c]
 
     encoder_model = Model(encoder_inputs, encoder_states)
 
@@ -647,13 +633,7 @@ def LSTM_autoencoder(dim,  units, source_Y, cell_type, learning_rate, teacher_fo
 
     # define training decoder
     if not teacher_force:
-      # Set the initial state of the decoder to be the ouput state of the encoder.
-      # This is the fundamental part of the encoder-decoder.
-      decoder_outputs_and_states = decoder(decoder_inputs, initial_state=encoder_states)
-
-      # Only select the output of the decoder (not the states)
-      decoder_outputs = decoder_outputs_and_states[0]
-
+      decoder_outputs, _, _ = decoder(decoder_inputs, initial_state=encoder_states)
       decoder_dense = Dense(1)
       decoder_outputs = decoder_dense(decoder_outputs)
     else:

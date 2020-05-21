@@ -30,11 +30,11 @@ import string
 ############################
 #Set the seed to produce consistent results
 ###########################
-
+'''
 tensorflow.random.set_seed(0)
 random.seed(0)
 np.random.seed(0)
-
+'''
 
 
 pred = os.environ["pred"]
@@ -262,7 +262,7 @@ if __name__ == "__main__":
                         validation_data = (valid_X  , valid_Y), 
                         verbose = 1,
                         callbacks = [callback_early_stopping, callback_checkpoint, WandbCallback()],
-                        shuffle = False
+                        shuffle = True
                         )
             
             
