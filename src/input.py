@@ -5,6 +5,8 @@ import matplotlib as plt
 import numpy as np
 import scipy.io as sio
 rng = np.random
+from sklearn.preprocessing import StandardScaler
+
 
 from scipy import stats
 from utils import rolling_window, preprocess_data
@@ -31,7 +33,48 @@ def get_data():
   format_1=stats.zscore(format_1, axis=2)
 
   assert (format_1.shape == (65, 192, 840))
+  '''
+  trials_train = np.array([172, 125, 136,  99,  82,  31, 133,  44, 183, 184, 142, 121,  18,
+          89, 141,  27, 107,  49,  68, 186,  70,  92, 109,   6, 147, 124,
+        117, 161, 137,  39, 157, 159,   4,  23,  25, 145, 179, 118, 163,
+        106,  69, 187,  76, 108, 188,  32, 178,  19,  26,  72, 168, 158,
+          55,   8, 167,  11,  30,  59,  80,  95,  60, 148, 153,  45,  20,
+        152,  73,  48,  36, 100, 185, 131, 138,   3,  13,  97, 126, 171,
+        130,  54,   2,  50,  75,  83,  33, 174, 140,  79, 113, 146,  81,
+          64,  63,  46, 170,  16, 173, 156,  90, 103, 144,  29,  58,  47,
+        105, 189,  56,  34,  12, 165, 122, 119,  94,  42,  24,  37,  14,
+          65,  93,  87, 154,  77, 166, 114, 112, 160, 164,  51, 139,  84,
+        169,  85, 162,  88,  66, 155,  78,  28,   9,   1,  98, 132, 175,
+        177, 115,  96, 111,  52,  21, 180,  61, 191, 143,  10])
+
+  trials_valid = np.array([ 67,  15,  38,  22,   0,  74, 182, 151,  91,  43,  53, 123, 127,
+        128, 149, 190, 134, 102, 181])
+
+  trials_test = np.array([116,  57, 110,   7,  40, 176, 150,  41, 120, 135, 101,  71,  62,
+            86, 129,  35, 104,   5,  17])
+  train_data = format_1[:, trials_train, :]
+  valid_data = format_1[:, trials_valid, :]
+  test_data = format_1[:, trials_test, :]
+
+  format_1 = np.concatenate((train_data, valid_data, test_data), axis = 1)
+  print(format_1)
+
+
+  scaler = StandardScaler()
+  train_data = scaler.fit_transform(train_data.reshape(-1, train_data.shape[-1])).reshape(train_data.shape)
+  valid_data = scaler.transform(valid_data.reshape(-1, valid_data.shape[-1])).reshape(valid_data.shape)
+  test_data = scaler.transform(test_data.reshape(-1, test_data.shape[-1])).reshape(test_data.shape)
+
+
   
+  #inverse transform
+  train_data = scaler.inverse_transform(train_data)
+  valid_data = scaler.inverse_transform(valid_data)
+  test_data = scaler.inverse_transform(test_data)
+  format_1 = np.concatenate((train_data, valid_data, test_data), axis = 1)
+  print("Inverted data is ", format_1)
+  print(format_1.shape)
+  '''
   #format_1, scaler = preprocess_data(format_1)
   #format_1 = format_1[:, :, 160:]
   return format_1, trials
@@ -251,8 +294,8 @@ def get_info(pred, input_task, stimulus):
 
         #response = input("Do you want to embed information of Stimuli as well ? ( 1 for yes or 2 for no)") 
         if stimulus == "2":
-            source_Y = n_channel
-            source_X = n_channel if forecasting_self else electi
+            source_Y = [3, 13, 18, 27, 30, 32, 36, 37, 47, 50, 55, 64]
+            source_X =[3, 13, 18, 27, 30, 32, 36, 37, 47, 50, 55, 64]
         else: 
             source_Y = n_channel
             source_X = electi + [0] 
