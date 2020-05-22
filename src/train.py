@@ -170,7 +170,7 @@ if __name__ == "__main__":
             callback_checkpoint = ModelCheckpoint("../models/{}/{}_best_model.h5".format(model_name, model_name), mode = "min", monitor='val_loss', save_best_only=True, verbose = 1)
             
             
-            wandb.config.loss = "MSE"
+            wandb.config.loss = "Cosine_loss"
             wandb.config.optimizer = "Adam"
 
             ############################

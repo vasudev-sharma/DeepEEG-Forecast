@@ -1,10 +1,10 @@
 {
     "training_epochs":100,
     "batch_size" : 1024,
-    "units" : 50,
-    "learning_rate" : 0.01,
+    "units" : 128,
+    "learning_rate" : 0.001,
     "cell_type" : "LSTM",
-    "teacher_force":"True"
+    "teacher_force":""
 
     
 }

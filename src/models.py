@@ -615,7 +615,7 @@ def LSTM_autoencoder(dim,  units, source_Y, cell_type, learning_rate, teacher_fo
       decoder_inputs = Input(shape=(1, features), name='decoder_inputs')
     else:
       print("Model is not using teacher forcing")
-      decoder_inputs = Input(shape=(window, features), name='decoder_inputs')
+      decoder_inputs = Input(shape=(None, features), name='decoder_inputs')
 
     if teacher_force:
         encoder = LSTM(units, return_state=True)
