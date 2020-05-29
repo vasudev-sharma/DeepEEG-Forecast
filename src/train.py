@@ -36,7 +36,9 @@ random.seed(0)
 np.random.seed(0)
 '''
 
-
+# This is secret and shouldn't be checked into version control
+os.environ['WANDB_API_KEY']='202040aaac395bbf5a4a47d433a5335b74b7fb0e'
+os.environ['WANDB_MODE'] = 'dryrun'
 pred = os.environ["pred"]
 stimulus = os.environ["stimulus"]
 input_task = os.environ["input_task"]
@@ -96,10 +98,8 @@ if __name__ == "__main__":
 
     #Parameters of model
     training_epochs = parameters["training_epochs"]
-    if model_name == "LR" and input_task=="1":
-        batch_size = train_X.shape[0]
-    else:     
-        batch_size = parameters["batch_size"]
+     
+    batch_size = parameters["batch_size"]
     
     units = parameters["units"]
     learning_rate = parameters["learning_rate"]
@@ -114,7 +114,7 @@ if __name__ == "__main__":
     #LOG Congif Parameters
     #######
     
-    wandb.init(config=parameters, project= "input_task_" + input_task  + "_" +  "stimulus_" + stimulus + "_" + "Prediction_" + pred + "_" + "Model_name_" + model_name + "_" + "Horizon_" + str(horizon) + "_" + "Output_type_" + MIMO_output )
+    wandb.init(config=parameters, project= "input_task_" + input_task  + "_" +  "stimulus_" + stimulus + "_" + "Prediction_" + '3, 13, 18, 27, 30, 32, 36, 37, 47, 50, 55, 64' + "_" + "Model_name_" + model_name + "_" + "Horizon_" + str(horizon) + "_" + "Output_type_" + MIMO_output )
     
 
     if model_name == "LSTM_autoencoder":
@@ -198,7 +198,7 @@ if __name__ == "__main__":
 
                 tuner_search=RandomSearch(model,
                                         objective='val_loss',
-                                        max_trials=40,project_name= "experiment/"+ random_string,
+                                        max_trials=200,project_name= "experiment/"+ random_string,
                                         executions_per_trial=1,
                 )
 
@@ -214,7 +214,7 @@ if __name__ == "__main__":
                 #Use the best model
                 model=tuner_search.get_best_models(num_models=1)[0]
                 
-                training_epochs = 30
+                training_epochs = 20
 
 
             print(model.summary())
@@ -334,8 +334,12 @@ if __name__ == "__main__":
 
         if len(test_Y.shape) == 3 and len(predictions.shape) == 3:
             #Actual and Predicted values for Single electrode mutistep 
-            true_elec = test_Y[:, :, 0]
-            pred_elec = predictions[:, :, 0]
+            pass
+            #true_elec = test_Y[:, :, 0]
+            #pred_elec = predictions[:, :, 0]
+            true_elec = test_Y
+            pred_elec = predictions
+
         else: 
             true_elec = test_Y
             pred_elec = predictions
@@ -346,11 +350,13 @@ if __name__ == "__main__":
         #R value of a single electrode for all the time steps
         corr = list_correlation(true_elec, pred_elec)
 
-        plot_r_horizon(corr)
+        #plot_r_horizon(corr)
          
        
-
-        print("The value of correlation is for electrode 63 is {}". format(corr))
+        for  i in range(12):
+            #R value of a single electrode for all the time steps
+            corr = list_correlation(true_elec[:,:, i], pred_elec[:, :, i])
+            print("The value of correlation is for electrode is {}". format(corr))
 
         
     else: 
@@ -392,7 +398,7 @@ if __name__ == "__main__":
     #Perform sanity check to check the model is performing the correct prediction over future time steps horzizons and over certi
     sanity_check(test_Y, predictions, MIMO_output)
 
-    
+    '''
     #Log the images
 
     wandb.log({
@@ -415,7 +421,7 @@ if __name__ == "__main__":
     wandb.log({
     "Prediction_horizon":  wandb.Image("./Prediction.png")})
 
-
+    '''
    
 
 

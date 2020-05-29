@@ -3,6 +3,7 @@ from tensorflow.keras.layers import *
 from tensorflow.keras.models import Model, Sequential
 from tensorflow.keras import initializers
 from tensorflow.keras import optimizers
+from tensorflow.keras.layers import Activation
 import tensorflow.keras
 import tensorflow
 from metrics import cosine_loss, mean_squared_loss
@@ -15,7 +16,7 @@ from collections import UserDict, deque
 def linear_regression(dim, learning_rate, loss, optimizer):
 
     _, features = dim 
-    out_features = 160
+    out_features = 160 * 12
 
   
 
@@ -173,24 +174,24 @@ def conv_1D_hp(hp):
 def conv_1D_cross_hp(hp):
 
   
-  learning_rate = 0.01
+  learning_rate = 0.001
   features = 1
   window = 160
  
   model = Sequential([
 
-    Conv1D(input_shape = (window, features), filters = hp.Int('conv_1_filter', min_value=2, max_value= 6, step= 1),  kernel_size=hp.Choice('conv_1_kernel', values = [3,5])),
+    Conv1D(input_shape = (window, features), filters = hp.Int('conv_1_filter', min_value=2, max_value= 10, step= 2),  kernel_size=hp.Choice('conv_1_kernel', values = [3,5]), padding= "causal", dilation_rate= 1),
     ELU(),
     MaxPooling1D(pool_size= 2),
 
   
     
-    Conv1D(filters =  hp.Int('conv_2_filter', min_value=2, max_value= 6, step= 1 ), kernel_size = hp.Choice('conv_2_kernel', values = [3,5])),
+    Conv1D(filters =  hp.Int('conv_2_filter', min_value=2, max_value= 10, step= 2 ), kernel_size = hp.Choice('conv_2_kernel', values = [3,5]), padding= "causal", dilation_rate= 2),
     ELU(),
     MaxPooling1D(pool_size= 2),
 
     
-    Conv1D(filters =  hp.Int('conv_3_filter', min_value=2, max_value= 6, step= 1), kernel_size = hp.Choice('conv_3_kernel', values = [3,5])),
+    Conv1D(filters =  hp.Int('conv_3_filter', min_value=4, max_value= 14, step= 2), kernel_size = hp.Choice('conv_3_kernel', values = [3,5]), padding= "causal", dilation_rate= 4),
     ELU(),
     MaxPooling1D(pool_size= 2),
 
@@ -198,7 +199,7 @@ def conv_1D_cross_hp(hp):
     Flatten(),
     #out = Activation("linear")(X)
     #X = Dense(50, activation = "relu")(X)
-    Dense(features, activation = "linear",  kernel_initializer = 'normal')
+    Dense(160, activation = "linear",  kernel_initializer = 'normal')
   ])
   #Set up the Optimizers
   sgd = optimizers.SGD(learning_rate)
@@ -207,7 +208,7 @@ def conv_1D_cross_hp(hp):
 
 
   #Compile the model
-  model.compile(loss = tensorflow.keras.losses.MeanSquaredError(), optimizer = adam, metrics=['mse'])
+  model.compile(loss = tensorflow.keras.losses.MSE, optimizer = adam, metrics=['mse'])
     
   return model
 
@@ -221,29 +222,29 @@ def conv_1D_cross(dim, source_Y, learning_rate, loss, optimizer):
     print(features)
     model = Sequential([
 
-    Conv1D(input_shape = (window, features) ,filters = 2,  kernel_size = 5 ),
+    Conv1D(input_shape = (window, features) ,filters = 4,  kernel_size = 5),
     ELU(),
     SpatialDropout1D(0.1),
     MaxPooling1D(pool_size= 2),
 
   
     
-    Conv1D(filters = 4  , kernel_size = 3),
+    Conv1D(filters = 6 , kernel_size = 3),
  
     ELU(),
     SpatialDropout1D(0.1),
     MaxPooling1D(pool_size= 2),
 
     
-    Conv1D(filters = 4 ,kernel_size = 3),
+    Conv1D(filters = 6 ,kernel_size = 3),
     ELU(),
     SpatialDropout1D(0.1),
     MaxPooling1D(pool_size= 2),
 
 
     Flatten(),
-   
-    Dense(160, activation = "linear", kernel_initializer = 'normal')
+    #Activation('linear')
+    Dense(160, activation = "linear")
     
     ])
     #Set up the Optimizers

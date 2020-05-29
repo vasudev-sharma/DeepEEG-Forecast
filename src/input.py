@@ -71,6 +71,7 @@ def get_data():
   train_data = scaler.inverse_transform(train_data)
   valid_data = scaler.inverse_transform(valid_data)
   test_data = scaler.inverse_transform(test_data)
+  
   format_1 = np.concatenate((train_data, valid_data, test_data), axis = 1)
   print("Inverted data is ", format_1)
   print(format_1.shape)
@@ -270,8 +271,8 @@ def get_info(pred, input_task, stimulus):
             source_Y = electi   #retrieving the electrode number as a whole number - implies that there is only one electrode chosen in this direction
             source_X = [0]          #conversion of the stimuli line in the form of a list - necessary for the for loop: see below - extraction X
         else:
-            source_Y = electi
-            source_X = [0] + electi
+            source_Y = [3, 13, 18, 27, 30, 32, 36, 37, 47, 50, 55, 64]
+            source_X = [0] + [3, 13, 18, 27, 30, 32, 36, 37, 47, 50, 55, 64]
 
     elif input_task == '2':
         
