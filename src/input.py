@@ -251,81 +251,95 @@ def split_trials(trials):
   return trials_train, trials_valid, trials_test
 
  
-def get_info(pred, input_task, stimulus):
+def get_info(pred, input_task, stimulus, format_1):
 
-  
+    '''
+      param: pred -(int), parameter to predict the channel in the eeg experiment
+      param: input_task -  (string),  indicating which task to perform 1 --> Stiluli to EEG
+                                                                  2 --> EEG to stimuli 
+                                                                  3 --> EEG to EEG porecasting
+      param: stimulus - (string),  indicating to whether include stimuli or not in the data 
+                                                                  1 --> Include stimuli information
+                                                                  2 --> Not include stimuli information
 
+      return source_X(List of int), source_Y(List of int), window(int)
+
+    '''
     window = 160
 
-    #n_channel = input('Enter  the chanel number for which you want your predicion: ')
-
-
-    #input_task = input('Please define what should be predicted (1 for EEG from stimulus or 2 for stimulus from EEG or 3 for EEG forecasting ):')
-
     if input_task == '1':
-        #response = input("Do you want to embed information of EEG as well ? ( 1 for yes or 2 for no)")
         electi = [pred]
         print(electi)
 
         if stimulus == "2":
-            source_Y = electi   #retrieving the electrode number as a whole number - implies that there is only one electrode chosen in this direction
+            source_Y = electi      #retrieving the electrode number as a whole number - implies that there is only one electrode chosen in this direction
             source_X = [0]          #conversion of the stimuli line in the form of a list - necessary for the for loop: see below - extraction X
         else:
-            source_Y = [3, 13, 18, 27, 30, 32, 36, 37, 47, 50, 55, 64]
-            source_X = [0] + [3, 13, 18, 27, 30, 32, 36, 37, 47, 50, 55, 64]
+        #Use stimuli
+            source_Y = electi
+            source_X = [0] + electi
 
     elif input_task == '2':
-        
+        print("Hello")
         electi = [pred]
         print(electi)
-
-        #format_1 = np.flip(format_1,2)     # data inversion according to the time dimension - problem ????
+        format_1 = np.flip(format_1,2)     # data inversion according to the time dimension - problem ????
         source_Y = [0]
         source_X = electi
+        print("Source_X value in get info loop is ", source_X)
         
     elif input_task == '3':
-        electi = [i for i in range(1, 65) if i!=pred]
-        print(electi)
 
-        if len(electi)!= 64:
+        electi = [i for i in range(1, 65) if i!=pred] 
+
+        if len(electi)!= 64: 
           n_channel = [pred]  
         else:
           n_channel = electi
           print("The value of channel to be predicted is ", n_channel)
 
-        #response = input("Do you want to embed information of Stimuli as well ? ( 1 for yes or 2 for no)") 
+        
         if stimulus == "2":
-            source_Y = [3, 13, 18, 27, 30, 32, 36, 37, 47, 50, 55, 64]
-            source_X =[3, 13, 18, 27, 30, 32, 36, 37, 47, 50, 55, 64]
+            source_Y = n_channel
+            source_X = n_channel if forecasting_self else electi
+        #Use stimuli
         else: 
             source_Y = n_channel
             source_X = electi + [0] 
 
-    return source_X, source_Y, window
+    return source_X, source_Y, window, format_1
 
 def data(pred, input_task, stimulus,  horizon,  split, multivariate):
     
     '''
 
-    param: pred - a integer parameter to predict the channel in the eeg experiment
-    param: input_task - a string indicating which task to perform 1 --> Stiluli to EEG
+    param: pred - (int), parameter to predict the channel in the eeg experiment
+    param: input_task - (string),  indicating which task to perform 1 --> Stiluli to EEG
                                                                 2 --> EEG to stimuli 
                                                                 3 --> EEG to EEG porecasting
-    param: stimulus - string indicating ti whether include stimuli or not in the data 
+    param: stimulus - (String),  indicating whether to include stimuli or not in the data 
                                                                 1 --> Include stimuli information
                                                                 2 --> Not include stimuli information
-    param: horizon - (int) number of time steps to predicted in the future
+    param: horizon - (int),  number of time steps to predicted in the future
     param: split   - (Boolean) Indicating  whether to use LR (False) or not (True - other models)
     param: mutivariate -  (Boolean) indicating whether you want to split the data into features or not
                                                                 True --> Used for case for mutistep forecasting 
                                                                 False ---> Used for isingle step forecasting
-     '''                                            
+                                          
+    return: (Tuple of 3 np.array's), splits the EEG data into train, validation and test set          
+    '''                                            
 
 
-    source_X, source_Y, window = get_info(pred, input_task, stimulus)
-    
+   
+
     #get data
     data, trials = get_data()
+
+    source_X, source_Y, window, data = get_info(pred, input_task, stimulus, data)
+    print("Value of source_Y is", source_Y)
+    print("Value of source_X is", source_X)
+
+
 
     return(split_data(data, window, trials, source_Y, source_X, horizon, split, multivariate))
 

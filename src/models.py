@@ -16,7 +16,7 @@ from collections import UserDict, deque
 def linear_regression(dim, learning_rate, loss, optimizer):
 
     _, features = dim 
-    out_features = 160 * 12
+    out_features = 160 
 
   
 
@@ -635,7 +635,7 @@ def LSTM_autoencoder(dim,  units, source_Y, cell_type, learning_rate, teacher_fo
     # define training decoder
     if not teacher_force:
       decoder_outputs, _, _ = decoder(decoder_inputs, initial_state=encoder_states)
-      decoder_dense = Dense(features)
+      decoder_dense = Dense(features )
       decoder_outputs = decoder_dense(decoder_outputs)
     else:
       decoder_outputs = build_static_loop(encoder_states, decoder_inputs, decoder)
