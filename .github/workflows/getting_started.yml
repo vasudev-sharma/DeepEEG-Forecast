@@ -1,10 +1,16 @@
 #Basic workflow to get started with Github Actions
 name: Getting Started
 on: push #Name of event trigerring the github Action
-jobs: checkout_version_wandb #Name of job, you want to execute
-  
-  runs-on: ubuntu-latest
-  steps:
-    -uses: actions/checkout@v1
-    -run: pip install wandb
-    -run: pip freeze
+jobs: 
+  checkout_version_wandb: #Name of job, you want to execute
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - run: pip install wandb
+      - run: pip freeze
+
+
+
+
+
+
