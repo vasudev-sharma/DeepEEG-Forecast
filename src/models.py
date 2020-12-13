@@ -3,16 +3,20 @@ from tensorflow.keras.layers import *
 from tensorflow.keras.models import Model, Sequential
 from tensorflow.keras import initializers
 from tensorflow.keras import optimizers
+from tensorflow.keras.layers import Activation
 import tensorflow.keras
 import tensorflow
 from metrics import cosine_loss, mean_squared_loss
+from tensorflow.keras.regularizers import L1L2
+from collections import UserDict, deque
+
 
 '''Linear Regression Models'''
 
-def linear_regression(dim, learning_rate):
+def linear_regression(dim, learning_rate, loss, optimizer):
 
     _, features = dim 
-    out_features = features / 160
+    out_features = 160 
 
   
 
@@ -24,9 +28,23 @@ def linear_regression(dim, learning_rate):
     adam = optimizers.Adam(lr = learning_rate)
     rmsprop = optimizers.RMSprop(lr = learning_rate)
 
+    
+    if loss == "MSE":
+        print("MSE Loss is used")
+        loss = tensorflow.keras.losses.MSLE
+    else:
+        print("Cosine loss is used")
+        loss = cosine_loss
+    
+    if optimizer == "SGD":
+        print("SGD optimizer is used")
+        optimizer = sgd
+    else:
+        print("Adam optimizer is used")
+        optimizer = adam
 
     #Compile the model
-    model.compile(loss = tensorflow.keras.losses.MeanSquaredError(), optimizer = sgd, metrics=['mse'])
+    model.compile(loss = loss, optimizer = optimizer, metrics=['mse'])
 
     return model 
 
@@ -35,7 +53,7 @@ def linear_regression(dim, learning_rate):
 '''CNN Models'''
 
 #COnvolutional Neural Network
-def conv_1D(dim, source_Y, learning_rate):
+def conv_1D(dim, source_Y, learning_rate, loss, optimizer):
 
     _, window, features = dim
 
@@ -68,17 +86,32 @@ def conv_1D(dim, source_Y, learning_rate):
     #X = Dense(50, activation = "relu")(X)
     out = Dense(source_Y, activation = "linear",  kernel_initializer = 'normal')(X)
 
+    
+    model = Model(inputs = inp, outputs = out)
      #Set up the Optimizers
     sgd = optimizers.SGD(learning_rate)
     adam = optimizers.Adam(lr = learning_rate)
     rmsprop = optimizers.RMSprop(lr = learning_rate)
     adagrad = optimizers.Adagrad(lr =learning_rate)
 
+    if loss == "MSE":
+        print("MSE Loss is used")
+        loss = tensorflow.keras.losses.MSE
+    else:
+        print("Cosine loss is used")
+        loss = cosine_loss
+    
+    if optimizer == "SGD":
+        print("SGD optimizer is used")
+        optimizer = sgd
+    else:
+        print("Adam optimizer is used")
+        optimizer = adam
+
 
     #Compile the model
-    model.compile(loss = tensorflow.keras.losses.MeanSquaredError(), optimizer = sgd, metrics=['mse'])
-    
-    model = Model(inputs = inp, outputs = out)
+    model.compile(loss = loss, optimizer = optimizer, metrics=['mse'])
+
     return model
 
 
@@ -128,7 +161,7 @@ def conv_1D_hp(hp):
 
 
   #Compile the model
-  model.compile(loss = tensorflow.keras.losses.MeanSquaredError(), optimizer = sgd, metrics=['mse'])
+  model.compile(loss = tensorflow.keras.losses.MeanSquaredError(), optimizer = adam, metrics=['mse'])
     
   return model
 
@@ -141,24 +174,24 @@ def conv_1D_hp(hp):
 def conv_1D_cross_hp(hp):
 
   
-  learning_rate = 0.01
+  learning_rate = 0.001
   features = 1
   window = 160
  
   model = Sequential([
 
-    Conv1D(input_shape = (window, features), filters = hp.Int('conv_1_filter', min_value=2, max_value= 6, step= 1),  kernel_size=hp.Choice('conv_1_kernel', values = [3,5])),
+    Conv1D(input_shape = (window, features), filters = hp.Int('conv_1_filter', min_value=2, max_value= 10, step= 2),  kernel_size=hp.Choice('conv_1_kernel', values = [3,5]), padding= "causal", dilation_rate= 1),
     ELU(),
     MaxPooling1D(pool_size= 2),
 
   
     
-    Conv1D(filters =  hp.Int('conv_2_filter', min_value=2, max_value= 6, step= 1 ), kernel_size = hp.Choice('conv_2_kernel', values = [3,5])),
+    Conv1D(filters =  hp.Int('conv_2_filter', min_value=2, max_value= 10, step= 2 ), kernel_size = hp.Choice('conv_2_kernel', values = [3,5]), padding= "causal", dilation_rate= 2),
     ELU(),
     MaxPooling1D(pool_size= 2),
 
     
-    Conv1D(filters =  hp.Int('conv_3_filter', min_value=2, max_value= 6, step= 1), kernel_size = hp.Choice('conv_3_kernel', values = [3,5])),
+    Conv1D(filters =  hp.Int('conv_3_filter', min_value=4, max_value= 14, step= 2), kernel_size = hp.Choice('conv_3_kernel', values = [3,5]), padding= "causal", dilation_rate= 4),
     ELU(),
     MaxPooling1D(pool_size= 2),
 
@@ -166,7 +199,7 @@ def conv_1D_cross_hp(hp):
     Flatten(),
     #out = Activation("linear")(X)
     #X = Dense(50, activation = "relu")(X)
-    Dense(features, activation = "linear",  kernel_initializer = 'normal')
+    Dense(160, activation = "linear",  kernel_initializer = 'normal')
   ])
   #Set up the Optimizers
   sgd = optimizers.SGD(learning_rate)
@@ -175,42 +208,44 @@ def conv_1D_cross_hp(hp):
 
 
   #Compile the model
-  model.compile(loss = tensorflow.keras.losses.MeanSquaredError(), optimizer = sgd, metrics=['mse'])
+  model.compile(loss = tensorflow.keras.losses.MSE, optimizer = adam, metrics=['mse'])
     
   return model
 
 
 '''Models for Cross Correlation between Stimuli and EEG'''
 
-def conv_1D_cross(dim, source_Y, learning_rate):
+def conv_1D_cross(dim, source_Y, learning_rate, loss, optimizer):
 
     _, window, features = dim
 
-  
+    print(features)
     model = Sequential([
 
-    Conv1D(input_shape = (window, features), filters = 2,  kernel_size = 5),
+    Conv1D(input_shape = (window, features) ,filters = 4,  kernel_size = 5),
     ELU(),
     SpatialDropout1D(0.1),
     MaxPooling1D(pool_size= 2),
 
   
     
-    Conv1D(filters = 4 , kernel_size = 5),
+    Conv1D(filters = 6 , kernel_size = 3),
+ 
     ELU(),
     SpatialDropout1D(0.1),
     MaxPooling1D(pool_size= 2),
 
     
-    Conv1D(filters = 4,  kernel_size = 5),
+    Conv1D(filters = 6 ,kernel_size = 3),
     ELU(),
     SpatialDropout1D(0.1),
     MaxPooling1D(pool_size= 2),
 
-    
+
     Flatten(),
-  
-    Dense(features, activation = "linear", kernel_initializer = 'normal')
+    #Activation('linear')
+    Dense(160, activation = "linear")
+    
     ])
     #Set up the Optimizers
     sgd = optimizers.SGD(learning_rate)
@@ -218,10 +253,25 @@ def conv_1D_cross(dim, source_Y, learning_rate):
     rmsprop = optimizers.RMSprop(lr = learning_rate)
     adagrad = optimizers.Adagrad(lr =learning_rate)
 
+    print("Value of Optimzer is", optimizer)
+
+    if loss == "MSE":
+        print("MSE Loss is used")
+        loss = tensorflow.keras.losses.MSE
+    else:
+        print("Cosine loss is used")
+        loss = cosine_loss
+    
+    if optimizer == "SGD":
+        print("SGD optimizer is used")
+        optimizer = sgd
+    if optimizer == "Adam":
+        print("Adam optimizer is used")
+        optimizer = adam
 
     #Compile the model
-    model.compile(loss = tensorflow.keras.losses.MeanSquaredError(), optimizer = sgd, metrics=['mse'])
-        
+    model.compile(loss = loss, optimizer = optimizer, metrics=['mse'])
+
     return model
 
 
@@ -230,7 +280,7 @@ def conv_1D_cross(dim, source_Y, learning_rate):
 '''Recurent Neural Network Models'''
 
 
-def vanilla_LSTM(dim,  units, source_Y, cell_type, learning_rate):
+def vanilla_LSTM(dim,  units, source_Y, cell_type, learning_rate, loss, optimizer):
 
     _, window, features = dim
     model = Sequential()
@@ -253,10 +303,24 @@ def vanilla_LSTM(dim,  units, source_Y, cell_type, learning_rate):
     adam = optimizers.Adam(lr = learning_rate)
     rmsprop = optimizers.RMSprop(lr = learning_rate)
 
+    if loss == "MSE":
+        print("MSE Loss is used")
+        loss = tensorflow.keras.losses.MSE
+    else:
+        print("Cosine loss is used")
+        loss = cosine_loss
+    
+    if optimizer == "SGD":
+        print("SGD optimizer is used")
+        optimizer = sgd
+    else:
+        print("Adam optimizer is used")
+        optimizer = adam
+
 
     #Compile the model
-    model.compile(loss= tensorflow.keras.losses.MeanSquaredError(), optimizer = sgd, metrics=['mse'])
-        
+    model.compile(loss = loss, optimizer = optimizer, metrics=['mse'])
+
 
     return model
 
@@ -288,7 +352,7 @@ def vanilla_LSTM_hp(hp):
 
 
     #Compile the model
-    model.compile(loss = tensorflow.keras.losses.MeanSquaredError(), optimizer = sgd, metrics=['mse'])
+    model.compile(loss = tensorflow.keras.losses.MeanSquaredError(), optimizer = adam, metrics=['mse'])
         
 
     return model
@@ -315,7 +379,7 @@ def vanilla_LSTM_cross_hp(hp):
 
 
     #Compile the model
-    model.compile(loss = tensorflow.keras.losses.MeanSquaredError(), optimizer = sgd, metrics=['mse'])
+    model.compile(loss = tensorflow.keras.losses.MeanSquaredError(), optimizer = adam, metrics=['mse'])
         
 
     return model
@@ -325,7 +389,7 @@ def vanilla_LSTM_cross_hp(hp):
 #Hybrid Models
 ########################
 
-def conv_lstm( dim, source_Y, learning_rate):
+def conv_lstm( dim, source_Y, learning_rate, loss, optimizer):
    
 
     _, window, features = dim
@@ -371,15 +435,30 @@ def conv_lstm( dim, source_Y, learning_rate):
     rmsprop = optimizers.RMSprop(lr = learning_rate)
 
 
+    if loss == "MSE":
+        print("MSE Loss is used")
+        loss = tensorflow.keras.losses.MSE
+    else:
+        print("Cosine loss is used")
+        loss = cosine_loss
+    
+    if optimizer == "SGD":
+        print("SGD optimizer is used")
+        optimizer = sgd
+    else:
+        print("Adam optimizer is used")
+        optimizer = adam
+
+
     #Compile the model
-    model.compile(loss = tensorflow.keras.losses.MeanSquaredError(), optimizer = sgd, metrics=['mse'])
-        
+    model.compile(loss = loss, optimizer = optimizer, metrics=['mse'])
+
     return model
 
 
 
 
-def combined_model(dim,  units, source_Y, cell_type, learning_rate):
+def combined_model(dim,  units, source_Y, cell_type, learning_rate, loss, optimizer):
    
 
     _, window, features = dim
@@ -438,11 +517,26 @@ def combined_model(dim,  units, source_Y, cell_type, learning_rate):
     sgd = optimizers.SGD(learning_rate)
     adam = optimizers.Adam(lr = learning_rate)
     rmsprop = optimizers.RMSprop(lr = learning_rate)
-
-
+    
     model = Model([input_1, input_2], output)
+
+
+    if loss == "MSE":
+        print("MSE Loss is used")
+        loss = tensorflow.keras.losses.MSE
+    else:
+        print("Cosine loss is used")
+        loss = cosine_loss
+    
+    if optimizer == "SGD":
+        print("SGD optimizer is used")
+        optimizer = sgd
+    else:
+        print("Adam optimizer is used")
+        optimizer = adam
+
     #Compile the model
-    model.compile(loss = tensorflow.keras.losses.MeanSquaredError(), optimizer = sgd, metrics=['mse'])
+    model.compile(loss = loss, optimizer = optimizer, metrics=['mse'])
         
     return model
 
@@ -450,7 +544,7 @@ def combined_model(dim,  units, source_Y, cell_type, learning_rate):
 
 
 
-def LSTM_autoencoder(dim,  units, source_Y, cell_type, learning_rate):
+def LSTM_autoencoder(dim,  units, source_Y, cell_type, learning_rate, teacher_force, loss, optimizer):
     _, window, features = dim
    
     
@@ -515,46 +609,69 @@ def LSTM_autoencoder(dim,  units, source_Y, cell_type, learning_rate):
     ################################################
    
     encoder_inputs = Input(shape=(window, features), name='encoder_inputs')
-    teacher_force = False
+    teacher_force = teacher_force
     z_score_outputs = False
     if teacher_force:
-      decoder_inputs = Input(shape=(window, features), name='decoder_inputs')
-    else:
+      print("Model is using teacher forcing")
       decoder_inputs = Input(shape=(1, features), name='decoder_inputs')
+    else:
+      print("Model is not using teacher forcing")
+      decoder_inputs = Input(shape=(None, features), name='decoder_inputs')
 
+    if teacher_force:
+        encoder = LSTM(units, return_state=True)
+    else:
+        encoder = LSTM(units, return_state=True)
 
-    encoder = LSTM(units, return_state=True)
     decoder = LSTM(units, return_sequences=True, return_state=True)
 
     encoder_outputs, state_h, state_c = encoder(encoder_inputs)
     encoder_states = [state_h, state_c]
 
-    # define inference encoder
     encoder_model = Model(encoder_inputs, encoder_states)
+
     #encoder_states = format_encoder_states(cell_type, encoder_states, use_first=False)
 
     # define training decoder
-    if teacher_force:
+    if not teacher_force:
       decoder_outputs, _, _ = decoder(decoder_inputs, initial_state=encoder_states)
-      decoder_dense = Dense(features)
+      decoder_dense = Dense(features )
       decoder_outputs = decoder_dense(decoder_outputs)
     else:
       decoder_outputs = build_static_loop(encoder_states, decoder_inputs, decoder)
     
     if z_score_outputs:
       decoder_outputs = tensorflow.math.divide(tensorflow.math.subtract(decoder_outputs, tensorflow.keras.backend.mean(decoder_outputs,axis=1,keepdims=True)),tensorflow.keras.backend.std(decoder_outputs,axis=1,keepdims=True))
-    # Full encoder-decoder model
-    model = Model([encoder_inputs, decoder_inputs], decoder_outputs, name='train_model')
+    
+    if teacher_force:
+        # Full encoder-decoder model
+        model = Model(encoder_inputs, decoder_outputs, name='train_model')
+    else:
+        model = Model([encoder_inputs, decoder_inputs], decoder_outputs, name='train_model')
 
 
     #Set up the Optimizers
     sgd = optimizers.SGD(learning_rate)
-   
+    adam = optimizers.Adam(lr = learning_rate)
+    rmsprop = optimizers.RMSprop(lr = learning_rate)
+    
+
+    if loss == "MSE":
+        print("MSE Loss is used")
+        loss = tensorflow.keras.losses.MSE
+    else:
+        print("Cosine loss is used")
+        loss = cosine_loss
+    
+    if optimizer == "SGD":
+        print("SGD optimizer is used")
+        optimizer = sgd
+    else:
+        print("Adam optimizer is used")
+        optimizer = adam
+
     #Compile the model
-    model.compile(loss = tensorflow.keras.losses.MeanSquaredError(), optimizer = sgd, metrics=['mse'])
- 
-
-
+    model.compile(loss = loss, optimizer = optimizer, metrics=['mse'])
 
     # return all models
     return model, encoder_model
@@ -634,18 +751,18 @@ def format_encoder_states(cell_type, encoder_states, use_first=True):
         # tensorflow.keras version 2.1.4 has encoder states reversed w.r.t later versions
         if tensorflow.keras.__version__ < '2.2':
             if cell_type == 'LSTM':
-                encoder_states = [Lambda(lambda x: tensorflow.keras.zeros_like(x))(s) for s in encoder_states[:-2]] + [
+                encoder_states = [Lambda(lambda x: tensorflow.keras.backend.zeros_like(x))(s) for s in encoder_states[:-2]] + [
                     encoder_states[-2]]
             else:
-                encoder_states = [Lambda(lambda x: tensorflow.keras.zeros_like(x))(s) for s in encoder_states[:-1]] + [
+                encoder_states = [Lambda(lambda x: tensorflow.keras.backend.zeros_like(x))(s) for s in encoder_states[:-1]] + [
                     encoder_states[-1]]
         else:
             if cell_type == 'LSTM':
                 print("Fuck OFF")
-                encoder_states = encoder_states[:2] + [Lambda(lambda x: tensorflow.keras.zeros_like(x))(s) for s in
+                encoder_states = encoder_states[:2] + [Lambda(lambda x: tensorflow.keras.backend.zeros_like(x))(s) for s in
                                                             encoder_states[2:]]
             else:
-                encoder_states = encoder_states[:1] + [Lambda(lambda x: tensorflow.keras.zeros_like(x))(s) for s in
+                encoder_states = encoder_states[:1] + [Lambda(lambda x: tensorflow.keras.backend.zeros_like(x))(s) for s in
                                                             encoder_states[1:]]
     return encoder_states
 
@@ -681,6 +798,155 @@ def build_static_loop(init_states, decoder_inputs, decoder):
 
 
 
+def ES_RNN(dim, units, source_Y, cell_type, learning_rate, loss, optimizer, batch_size):
+
+    _, window, features = dim
+    horizon = 160
+    m = 180 #Seasonality length
+    model_input = Input(shape=(window, features))
+    [normalized_input, denormalization_coeff] = ES(horizon, m, batch_size, window)(model_input)
+    gru_out = GRU(units)(normalized_input)
+    model_output_normalized = Dense(horizon)(gru_out)
+    model_output = Denormalization()([model_output_normalized, denormalization_coeff])
+    model = Model(inputs=model_input, outputs=model_output)
+
+    #Set up the Optimizers
+    sgd = optimizers.SGD(learning_rate)
+    adam = optimizers.Adam(lr = learning_rate)
+    rmsprop = optimizers.RMSprop(lr = learning_rate)
+
+    if loss == "MSE":
+        print("MSE Loss is used")
+        loss = tensorflow.keras.losses.MSE
+    else:
+        print("Cosine loss is used")
+        loss = cosine_loss
+    
+    if optimizer == "SGD":
+        print("SGD optimizer is used")
+        optimizer = sgd
+    else:
+        print("Adam optimizer is used")
+        optimizer = adam
+
+
+    #Compile the model
+    model.compile(loss = loss, optimizer = optimizer, metrics=['mse'])
+
+
+    return model
+
+
+
+
+
+# Exponential Smoothing + Normalization
+class ES(Layer):
+
+    def __init__(self, horizon, m, batch_size, time_steps, **kwargs):
+        self.horizon = horizon
+        self.m = m
+        self.batch_size = batch_size
+        self.time_steps = time_steps
+        
+        super(ES, self).__init__(**kwargs)
+
+    # initialization of the learned parameters of exponential smoothing
+    def build(self, input_shape):
+        self.alpha = self.add_weight(name='alpha', shape=(1,),
+                                     initializer='uniform', trainable=True) 
+        self.gamma = self.add_weight(name='gamma', shape=(1,),
+                                     initializer='uniform', trainable=True)
+        self.init_seasonality = self.add_weight(name='init_seasonality', shape=(self.m,),
+                                                initializer=initializers.Constant(value=0.8), trainable=True)
+        self.init_seasonality_list = [tensorflow.slice(self.init_seasonality,(i,),(1,)) for i in range(self.m)]
+        self.seasonality_queue = deque(self.init_seasonality_list, self.m)
+        self.level = self.add_weight(name='init_level', shape=(1,),
+                                     initializer=initializers.Constant(value=0.8), 
+                                     trainable=True)
+        super(ES, self).build(input_shape)  
+
+
+    def call(self, x):
+
+        # extract time-series from feature vector
+        n_examples = tensorflow.keras.backend.int_shape(x)[0]
+        if n_examples is None:
+            n_examples = self.batch_size
+        x1 = tensorflow.slice(x,(0,0,0),(1,self.time_steps,1))
+        x1 = tensorflow.keras.backend.reshape(x1,(self.time_steps,))
+        x2 = tensorflow.slice(x,(1,self.time_steps-1,0),(n_examples-1,1,1))
+        x2 = tensorflow.keras.backend.reshape(x2,(n_examples-1,))
+        ts = tensorflow.keras.backend.concatenate([x1,x2])
+        
+        x_norm = []  # normalized values of time-series
+        ls = []      # coeffients for denormalization of forecasts
+        
+        l_t_minus_1 = self.level
+        
+        for i in range(n_examples+self.time_steps-1):
+        
+            # compute l_t
+            y_t = ts[i]
+            s_t = self.seasonality_queue.popleft()
+            l_t = self.alpha * y_t / s_t + (1 - self.alpha) * l_t_minus_1
+            
+            # compute s_{t+m}
+            s_t_plus_m = self.gamma * y_t / l_t + (1 - self.gamma) * s_t
+            
+            self.seasonality_queue.append(s_t_plus_m)
+            
+            # normalize y_t
+            x_norm.append(y_t / (s_t * l_t))
+
+            l_t_minus_1 = l_t
+
+            if i >= self.time_steps-1:
+                l = [l_t]*self.horizon
+                l = tensorflow.keras.backend.concatenate(l)
+                s = [self.seasonality_queue[i] for i in range(self.horizon)] # we assume here that horizon < m
+                s = tensorflow.keras.backend.concatenate(s)
+                ls_t = tensorflow.keras.backend.concatenate([tensorflow.keras.backend.expand_dims(l), tensorflow.keras.backend.expand_dims(s)])
+                ls.append(tensorflow.keras.backend.expand_dims(ls_t,axis=0))  
+       
+        self.level = l_t
+        x_norm = tensorflow.keras.backend.concatenate(x_norm)
+
+        # create x_out
+        x_out = []
+        for i in range(n_examples):
+            norm_features = tensorflow.slice(x_norm,(i,),(self.time_steps,))
+            norm_features = tensorflow.keras.backend.expand_dims(norm_features,axis=0)
+            x_out.append(norm_features)
+
+        x_out = tensorflow.keras.backend.concatenate(x_out, axis=0)
+        x_out = tensorflow.keras.backend.expand_dims(x_out)
+
+        # create tensor of denormalization coefficients 
+        denorm_coeff = tensorflow.keras.backend.concatenate(ls, axis=0)
+        return [x_out, denorm_coeff]
+
+    def compute_output_shape(self, input_shape):
+        return [(input_shape[0], input_shape[1], input_shape[2]), (input_shape[0], self.horizon, 2)]
+    
+class Denormalization(Layer):
+    
+    def __init__(self, **kwargs):
+        super(Denormalization, self).__init__(**kwargs)
+
+    def build(self, input_shape):
+        super(Denormalization, self).build(input_shape)  
+
+    def call(self, x):
+        return x[0] * x[1][:,:,0] * x[1][:,:,1]
+
+    def compute_output_shape(self, input_shape):
+        return input_shape[0]
+
+
+
+
+
 
 
 
@@ -698,6 +964,7 @@ def get_model():
             "CNN_cross":conv_1D_cross,
             "LSTM_autoencoder":LSTM_autoencoder,
             "conv_lstm":conv_lstm,
-            "combined_model":combined_model
+            "combined_model":combined_model,
+            "ES_RNN":ES_RNN
             }
   return MODELS

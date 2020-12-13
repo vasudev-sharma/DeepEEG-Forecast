@@ -1,5 +1,7 @@
 import os
+
 import json
+import tensorflow
 from tensorflow.keras import optimizers
 from input import data, teacher_forcing
 from tensorflow.keras.models import load_model
@@ -9,8 +11,11 @@ from predict import predict_single_timestep, predict_multi_timestep, predict_aut
 from models import get_model, build_prediction_model
 from metrics import compute_correlation, list_correlation, mean_squared_loss, cosine_loss
 from tensorflow.keras.callbacks import ReduceLROnPlateau
-from utils import plot_multistep_prediction, plot_loss_curve, sanity_check
+from utils import plot_multistep_prediction, plot_loss_curve, sanity_check, plot_r_horizon
 from numpy import savez_compressed
+import matplotlib.pyplot as plt
+import wandb
+from wandb.keras import WandbCallback
 import numpy as np
 from tqdm import tqdm
 from kerastuner import RandomSearch
@@ -21,6 +26,19 @@ from utils import plot_weights
 import random 
 import string
 
+
+############################
+#Set the seed to produce consistent results
+###########################
+'''
+tensorflow.random.set_seed(0)
+random.seed(0)
+np.random.seed(0)
+'''
+
+# This is secret and shouldn't be checked into version control
+os.environ['WANDB_API_KEY']='202040aaac395bbf5a4a47d433a5335b74b7fb0e'
+os.environ['WANDB_MODE'] = 'run'
 pred = os.environ["pred"]
 stimulus = os.environ["stimulus"]
 input_task = os.environ["input_task"]
@@ -29,6 +47,8 @@ horizon = os.environ["horizon"]
 training = os.environ["training"]
 MIMO_output = os.environ["MIMO_output"]
 experiment_no=os.environ["experiment_no"]
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3' 
+
 
 
 
@@ -59,6 +79,7 @@ if __name__ == "__main__":
         split = False 
         
 
+
     
 
     print("The predicted value is ", pred)
@@ -68,50 +89,74 @@ if __name__ == "__main__":
     valid_X, valid_Y = valid
     test_X, test_Y = test        
 
+
+
+
+    #Read the parameters of the model
+    with open("../config/{}/parameters.json".format(model_name), "r") as param_file:
+        parameters = json.load(param_file)
+
+    #Parameters of model
+    training_epochs = parameters["training_epochs"]
+     
+    batch_size = parameters["batch_size"]
+    
+    units = parameters["units"]
+    learning_rate = parameters["learning_rate"]
+    if(model_name == "LSTM" or model_name=="LSTM_hp"  or model_name=="conv_LSTM" or model_name == "combined_model" or model_name =="ES_RNN"):
+        cell_type = parameters["cell_type"]
+    if model_name == "LSTM_autoencoder":
+        cell_type = parameters["cell_type"]
+        teacher_force = bool(parameters["teacher_force"])
+
+
+    #######
+    #LOG Congif Parameters
+    #######
+    
+    wandb.init(config=parameters, project= "input_task_" + input_task  + "_" +  "stimulus_" + stimulus + "_" + "Prediction_" + pred + "_" + "Model_name_" + model_name + "_" + "Horizon_" + str(horizon) + "_" + "Output_type_" + MIMO_output )
+    
+
     if model_name == "LSTM_autoencoder":
       encoder_input_train, decoder_input_train, decoder_target_train = teacher_forcing(train_X, train_Y)
       encoder_input_valid, decoder_input_valid,  decoder_target_valid = teacher_forcing(valid_X, valid_Y)
       encoder_input_test, decoder_input_test,  decoder_target_test = teacher_forcing(test_X, test_Y)
 
 
-      if not False: #Set to False for not teacher forcing, set to True for Teacher_forcing 
+      if not teacher_force: #Set to False for not teacher forcing, set to True for Teacher_forcing 
+        print("Teacher force is used")  
+        '''
         decoder_input_train = decoder_input_train[:, :1, :1]
         decoder_input_valid = decoder_input_valid[:, :1, :1]
         decoder_input_test = decoder_input_test[:, :1, :1]
+        '''
+        input_train = [encoder_input_train, decoder_input_train]
+        input_valid = [encoder_input_valid, decoder_input_valid]
+        input_test = [encoder_input_test, decoder_input_test]
 
-      input_train = [encoder_input_train, decoder_input_train]
-      input_valid = [encoder_input_valid, decoder_input_valid]
+
+      else:
+        input_train = encoder_input_train
+        input_valid = encoder_input_valid
+        input_test = encoder_input_test
+
+
+
       output_train = decoder_target_train
       output_valid = decoder_target_valid
-      input_test = [encoder_input_test, decoder_input_train]
       print("Shape of encoder_input_train, decoder_input_train, decoder_target_train is  ",  encoder_input_train.shape, decoder_input_train.shape, decoder_target_train.shape)
       print("Shape of encoder_input_valid, decoder_input_valid,  decoder_target_valid is ", encoder_input_valid.shape, decoder_input_valid.shape,  decoder_target_valid.shape)  
      
 
 
+
     
     if training: 
 
-            #Read the parameters of the model
-            with open("../config/{}/parameters.json".format(model_name), "r") as param_file:
-                parameters = json.load(param_file)
-
-            #Parameters of model
-            training_epochs = parameters["training_epochs"]
-            if model_name == "LR" and input_task=="1":
-                batch_size = train_X.shape[0]
-            else:     
-                batch_size = parameters["batch_size"]
-            
-            units = parameters["units"]
-            learning_rate = parameters["learning_rate"]
-            if(model_name == "LSTM" or model_name=="LSTM_hp"  or model_name=="conv_LSTM" or model_name == "combined_model"):
-                cell_type = parameters["cell_type"]
-            if model_name == "LSTM_autoencoder":
-                cell_type = parameters["cell_type"]
-                teacher_force = parameters["teacher_force"]
 
 
+            if not os.path.exists("../models/{}".format(model_name,)):
+                os.mkdir("../models/{}".format(model_name))
 
             '''
             reduce_lr = ReduceLROnPlateau(monitor='val_loss', factor=0.1,
@@ -120,24 +165,28 @@ if __name__ == "__main__":
             ####################################
             # Callbacks    
             ###################################
-            callback_early_stopping = EarlyStopping(monitor='val_loss', verbose=1, patience=20)
-            callback_checkpoint = ModelCheckpoint("../models/{}/{}_best_model.h5".format(model_name, model_name), monitor='val_loss', save_best_only=True, verbose = 1)
-        
             
-
+            callback_early_stopping = EarlyStopping(monitor='val_loss', verbose=1, patience=20, mode = 'min')
+            callback_checkpoint = ModelCheckpoint("../models/{}/{}_best_model.h5".format(model_name, model_name), mode = "min", monitor='val_loss', save_best_only=True, verbose = 1)
+            
+            
+            wandb.config.loss = "MSE"
+            wandb.config.optimizer = "Adam"
 
             ############################
             #Compile the model 
             ############################
             model = get_model()[model_name]
             if model_name == "LSTM" or model_name=="conv_LSTM" or model_name == "combined_model":
-                model = model(train_X.shape, units, train_Y.shape[-1], cell_type, learning_rate)
+                model = model(train_X.shape, units, train_Y.shape[-1], cell_type, learning_rate,  wandb.config.loss, wandb.config.optimizer)
             elif model_name =="LSTM_autoencoder":
-                model, encoder_model = model(train_X.shape, units, train_Y.shape[-1], cell_type, learning_rate)
+                model, encoder_model = model(train_X.shape, units, train_Y.shape[-1], cell_type, learning_rate, teacher_force,  wandb.config.loss, wandb.config.optimizer)
             elif model_name == "CNN" or model_name =="CNN_cross":
-                model = model(train_X.shape, train_Y.shape[-1], learning_rate)
+                model = model(train_X.shape, train_Y.shape[-1], learning_rate,  wandb.config.loss, wandb.config.optimizer)
             elif model_name =="LR":
-                model = model(train_X.shape, learning_rate)
+                model = model(train_X.shape, learning_rate,  wandb.config.loss, wandb.config.optimizer)
+            elif model_name =="ES_RNN":
+                model = model(train_X.shape, units, train_Y.shape[-1], cell_type, learning_rate,  wandb.config.loss, wandb.config.optimizer, batch_size)
             else:
                 model = model 
             
@@ -149,7 +198,7 @@ if __name__ == "__main__":
 
                 tuner_search=RandomSearch(model,
                                         objective='val_loss',
-                                        max_trials=40,project_name= "experiment/"+ random_string,
+                                        max_trials=200,project_name= "experiment/"+ random_string,
                                         executions_per_trial=1,
                 )
 
@@ -165,12 +214,12 @@ if __name__ == "__main__":
                 #Use the best model
                 model=tuner_search.get_best_models(num_models=1)[0]
                 
-                training_epochs = 30
+                training_epochs = 20
 
 
             print(model.summary())
             # Fit the model with the Data
-            plot_model(model, "{}_model.png".format(model_name), True, True)
+            plot_model(model, "../images/{}_model.png".format(model_name), True, True)
 
             ####################
             #Train the Model
@@ -184,9 +233,10 @@ if __name__ == "__main__":
                         epochs = training_epochs, 
                         validation_data = (input_valid, output_valid), 
                         verbose = 1,
-                        callbacks = [callback_early_stopping, callback_checkpoint],
+                        callbacks = [ callback_early_stopping, callback_checkpoint, WandbCallback()],
                         shuffle = True
                         )
+                    #callback_early_stopping, callback_checkpoint,
 
             elif model_name == "combined_model":
 
@@ -198,7 +248,7 @@ if __name__ == "__main__":
                         epochs = training_epochs, 
                         validation_data = ([valid_X[:, :, 0].reshape(valid_X.shape[0], valid_X.shape[1], 1),valid_X[:, :, 1].reshape(valid_X.shape[0], valid_X.shape[1], 1) ]  , valid_Y), 
                         verbose = 1,
-                        callbacks = [callback_early_stopping, callback_checkpoint],
+                        callbacks = [callback_early_stopping, callback_checkpoint, WandbCallback()],
                         shuffle = True
                         )
             
@@ -211,7 +261,7 @@ if __name__ == "__main__":
                         epochs = training_epochs, 
                         validation_data = (valid_X  , valid_Y), 
                         verbose = 1,
-                        callbacks = [callback_early_stopping, callback_checkpoint],
+                        callbacks = [callback_early_stopping, callback_checkpoint, WandbCallback()],
                         shuffle = True
                         )
             
@@ -221,18 +271,23 @@ if __name__ == "__main__":
 
             if flag_tuning == False:
                 model.save('../models/{}/{}.h5'.format(model_name, model_name))
+        
+            #Plot Training and Validation Loss
+            plot_loss_curve(history)
 
-  
+
+    
     #Load Best Checkpoint Model using Early Stopping 
-    model = load_model('../models/{}/{}_best_model.h5'.format(model_name, model_name) )
-
-   
-    plot_model(model, "{}_model.png".format(model_name), True, True)
+    if not wandb.config.loss == "MSE":
+        print("Cosine loss is used")
+        model = load_model('../models/{}/{}_best_model.h5'.format(model_name, model_name), custom_objects={"cosine_loss":cosine_loss} )
+    else:
+        print("MSE loss is used")
+        model = load_model('../models/{}/{}_best_model.h5'.format(model_name, model_name))
+    
+    plot_model(model, "../images/{}_model.png".format(model_name), True, True)
     print(model.summary())
 
-
-    #Plot Training and Validation Loss
-    plot_loss_curve(history)
 
 
 
@@ -240,141 +295,143 @@ if __name__ == "__main__":
     #Inference stage
     ####################################
 
-    
-    if input_task == "3":  #If you are performing Forecasting
-        if horizon > 1:
+
+    if horizon > 1:
+        #Predict the Y values for the given test set
+        #predictions = predict_multi_timestep(model, test_X, horizon = horizon, model_name = model_name)  #Output shape (Batch_size, horizon, features)
+        #plot_multistep_prediction(test_Y, predictions )
+
+        if MIMO_output:
+
+            if model_name == "LSTM_autoencoder":
+                
+                predictions = predict_single_timestep(model, input_test)  #Output shape is (Batch_Size, n_features)
+                '''
+                #LSTM AUTOENCODER Predictor
+                decoder_model = build_prediction_model((1, train_Y.shape[-1]), units, cell_type)
+                predictions = predict_autoencoder(encoder_model, decoder_model, encoder_input_test)
+                '''
+            else:
+                predictions = predict_single_timestep(model, test_X)  #Output shape is (Batch_Size, n_features)
+        else:
             #Predict the Y values for the given test set
-            #predictions = predict_multi_timestep(model, test_X, horizon = horizon, model_name = model_name)  #Output shape (Batch_size, horizon, features)
+            predictions = predict_multi_timestep(model, test_X, horizon = horizon, model_name = model_name)  #Output shape (Batch_size, horizon, features)
             #plot_multistep_prediction(test_Y, predictions )
 
-            if MIMO_output:
-
-                if model_name == "LSTM_autoencoder":
-                    #LSTM AUTOENCODER Predictor
-                    decoder_model = build_prediction_model((1, train_Y.shape[-1]), units, cell_type)
-                    predictions = predict_autoencoder(encoder_model, decoder_model, encoder_input_test)
-                else:
-                    predictions = predict_single_timestep(model, test_X)  #Output shape is (Batch_Size, n_features)
-            else:
-                #Predict the Y values for the given test set
-                predictions = predict_multi_timestep(model, test_X, horizon = horizon, model_name = model_name)  #Output shape (Batch_size, horizon, features)
-                #plot_multistep_prediction(test_Y, predictions )
 
 
+        
+        '''
 
-           
-            '''
+            # invert predictions
+        predictions = scaler.inverse_transform(predictions)
+        test_Y = scaler.inverse_transform(test_Y)
 
-                # invert predictions
-            predictions = scaler.inverse_transform(predictions)
-            test_Y = scaler.inverse_transform(test_Y)
+        '''
 
-            '''
+        print("Shape of true  is", test_Y.shape)
+        print("Shape of pred  is ", predictions.shape)
 
-            print("Shape of true  is", test_Y.shape)
-            print("Shape of pred  is ", predictions.shape)
-
+        if len(test_Y.shape) == 3 and len(predictions.shape) == 3:
             #Actual and Predicted values for Single electrode mutistep 
+            pass
             true_elec = test_Y[:, :, 0]
             pred_elec = predictions[:, :, 0]
-
-
-            print("Shape of true elec is", true_elec.shape)
-            print("Shape of pred elec is ", pred_elec.shape)
-
-            #R value of a single electrode for all the time steps
-            corr = list_correlation(true_elec, pred_elec)
-
-            print("The value of correlation is for electrode 63 is {}". format(corr))
-
             
+
         else: 
+            true_elec = test_Y
+            pred_elec = predictions
 
-            predictions = predict_single_timestep(model, test_X)  #Output shape is (Batch_Size, n_features)
+        print("Shape of true elec is", true_elec.shape)
+        print("Shape of pred elec is ", pred_elec.shape)
 
-            '''
-            # invert predictions
-            predictions = scaler.inverse_transform(predictions)
-            test_Y = scaler.inverse_transform(test_Y)
+        #R value of a single electrode for all the time steps
+        corr = list_correlation(true_elec, pred_elec)
 
-            '''
-
-            corr = list_correlation(predictions, test_Y)           #List of r value of all the the electrodes 
-
-            print(corr)
-                
+        plot_r_horizon(corr)
+        ''' 
+        a = []
+        for  i in range(12):
+            #R value of a single electrode for all the time steps
+                corr = list_correlation(true_elec[:,:, i], pred_elec[:, :, i])
+                a+=corr
         
-        
+             
         with open("corr_dat.json", "a") as write_file:
             write_file.write("\n")
-            json.dump(corr, write_file)
+            json.dump(a, write_file)
+        '''
 
-        with open("experiment_log.json", "a") as write_file:
-            json.dump({"Experiment_{}".format(experiment_no):corr }, write_file)
-            write_file.write("\n")
-       
+        
+    else: 
+
+        predictions = predict_single_timestep(model, test_X)  #Output shape is (Batch_Size, n_features)
+
+        '''
+        # invert predictions
+        predictions = scaler.inverse_transform(predictions)
+        test_Y = scaler.inverse_transform(test_Y)
+
+        '''
+
+        corr = list_correlation(predictions, test_Y)           #List of r value of all the the electrodes 
+
+        print(corr)
+        plot_r_horizon(corr)
+
     
-       
     
-    else: #Prediciting next time point of a single electrode or stimulus
-        if horizon > 1:
-                #Predict the Y values for the given test set
-                #predictions = predict_multi_timestep(model, test_X, horizon = horizon, model_name = model_name)  #Output shape (Batch_size, horizon, features)
-                #plot_multistep_prediction(test_Y, predictions )
+    with open("corr_dat.json", "a") as write_file:
+        write_file.write("\n")
+        json.dump(corr, write_file)
 
-                if MIMO_output:
+    with open("experiment_log.json", "a") as write_file:
+        json.dump({"Experiment_{}".format(experiment_no):corr }, write_file)
+        write_file.write("\n")
+    
 
-                    if model_name == "LSTM_autoencoder":
-                        #LSTM AUTOENCODER Predictor
-                        decoder_model = build_prediction_model((1, train_Y.shape[-1]), units, cell_type)
-                        predictions = predict_autoencoder(encoder_model, decoder_model, encoder_input_test)
-                    else:
-                        predictions = predict_single_timestep(model, test_X)  #Output shape is (Batch_Size, n_features)
-                else:
-                    #Predict the Y values for the given test set
-                    predictions = predict_multi_timestep(model, test_X, horizon = horizon, model_name = model_name)  #Output shape (Batch_size, horizon, features)
-                    #plot_multistep_prediction(test_Y, predictions )
-
-
-                 #Actual and Predicted values for Single electrode mutistep 
-                true_elec = test_Y[:, :, 0]
-                pred_elec = predictions[:, :, 0]
-
-                #R value of a single electrode for all the time steps
-                corr = list_correlation(true_elec, pred_elec)
-
-        else:
-            predictions = predict_single_timestep(model, test_X)  #Output shape is (Batch_Size, n_features)
-
-            '''
-            # invert predictions
-            predictions = scaler.inverse_transform(predictions)
-            test_Y = scaler.inverse_transform(test_Y)
-
-            '''
-
-            corr = list_correlation(predictions, test_Y)           #List of r value of all the the electrodes 
-
-            print(corr)
-                
-
-            
-        with open("corr_dat.json", "a") as write_file:
-            write_file.write("\n")
-            json.dump(corr, write_file)
-
-        with open("experiment_log.json", "a") as write_file:
-            json.dump({"Experiment_{}".format(experiment_no):corr }, write_file)
-            write_file.write("\n")
+    
 
         
         if model_name == "LR":
+            if not multivariate:
              weights = np.array(model.get_weights())
              plot_weights(weights, pred, window)
         
     
     #Perform sanity check to check the model is performing the correct prediction over future time steps horzizons and over certi
-    sanity_check(test_Y, predictions)
+    sanity_check(test_Y, predictions, MIMO_output)
+
+    
+    #Log the images
+
+    wandb.log({
+    "sanity_check_prediction_batch":  wandb.Image("../images/sanity_check_prediction_batch.png")})
+
+    wandb.log({"sanity_check_prediction_horizon":  wandb.Image("../images/sanity_check_prediction_horizon.png")})
+    
+    for i in range(160):
+        wandb.log({"corr_value": corr[i], "global_step" :i})
+
+
+    wandb.log({"corr_list": corr})
+
+
+    time = np.arange(0, 160)
+    plt.plot(time, corr)
+    wandb.log({"corr_plot": plt})
+    plt.figure()
+
+    wandb.log({
+    "Prediction_horizon":  wandb.Image("./Prediction.png")})
+
+    
+   
+
+
+
+
 
 
     if flag_tuning == False:

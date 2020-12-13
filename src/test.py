@@ -5,6 +5,11 @@ from predict import baseline
 import numpy as np
 from numpy import savez_compressed
 import matplotlib.pyplot as plt
+import wandb
+
+# Your custom arguments defined here
+
+
 if __name__ == "__main__":
 
     '''
@@ -41,10 +46,25 @@ if __name__ == "__main__":
 
     print("hello")
 
-    '''
+    
 
     compare_models()
 
+    '''
+    args = dict(
+       
+    )
 
- 
+    wandb.init(config=args, project="my-project")
+    wandb.config["more"] = "custom"
+
+    for i in range(2):
+        # Do some machine learning
+        epoch, loss, val_loss = 1, 2, 3
+        # Framework agnostic / custom metrics
+        wandb.log({"epoch": epoch, "loss": loss, "val_loss": val_loss})
     
+    wandb.log({
+        "image":  wandb.Image("../images/models_comparison.png")})
+
+            

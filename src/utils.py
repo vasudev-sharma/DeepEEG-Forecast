@@ -64,11 +64,28 @@ def show_data(data,channel, trial):
 
 
 
-def sanity_check(true, pred):
+def sanity_check(true, pred, MIMO_output):
 
-    if len(pred.shape) == 2:
+    if len(pred.shape) == 2 and not MIMO_output:
         return
-    
+    elif len(pred.shape) == 2 and  MIMO_output:
+       
+        plt.plot(true[1550,:],'r', label = "True value")
+        plt.plot(pred[1550,:],'b--', label = "Predicted value")
+        plt.legend()
+        plt.savefig("../images/sanity_check_prediction_horizon.png")
+
+        plt.figure()
+
+        #sanity check: the "sequence" is present both in the first AND in the second dimension
+        plt.plot(true[:500,0],'r', label = "True value")
+        plt.plot(pred[:500,0],'b--', label = "Predicted value")
+        plt.legend()
+        plt.savefig("../images/sanity_check_prediction_batch.png")
+        #not so true when z_score_outputs is true, because the 2nd dimension was z-scored, the first wasn't
+        #and, not so true with fake_data, i.e. when the signal is simple. The 'cheat' is only used for real EEG data.
+        #plt.xlim(100,150)
+        plt.figure()
     else:
 
         plt.plot(true[1550,:,0],'r', label = "True value")
@@ -86,7 +103,7 @@ def sanity_check(true, pred):
         #not so true when z_score_outputs is true, because the 2nd dimension was z-scored, the first wasn't
         #and, not so true with fake_data, i.e. when the signal is simple. The 'cheat' is only used for real EEG data.
         #plt.xlim(100,150)
-
+        plt.figure()
 
 class TrainValTensorBoard(TensorBoard):
     def __init__(self, log_dir='./logs', **kwargs):
@@ -124,7 +141,14 @@ class TrainValTensorBoard(TensorBoard):
         super(TrainValTensorBoard, self).on_train_end(logs)
         self.val_writer.close()
   
-
+def plot_r_horizon(corr):
+    if len(corr) > 1:
+        time = np.arange(0, 160)
+        plt.plot(time, corr)
+        plt.savefig("Prediction.png")
+        plt.figure()
+    else:
+        return
 
   #Graphical Display to plot weights
 def plot_weights(weights, electi, window):
@@ -249,16 +273,24 @@ def compare_plot_multistep_prediction(array, model_names, baseline):
 
 def compare_models():
     color_list = ['r', 'b', 'g', 'c', 'm', 'y']
-    model_names_list = ['LSTM_prediction', 'LSTM_prediction_from_Stimulus', 'LSTM_prediction_with_Stimulus', 'EEG_Predictions_from_Stimulus_CNN', "Combined_model", "bbbbbbbb", "cc"]
+    electrode_no = "26_"
+    #model_names_list = ['LSTM_prediction', 'LSTM_prediction', 'LSTM+CNN_prediction_from_Stimulus+EEG', 'LSTM+CNN_prediction_from_Stimulus+EEG','CNN_prediction_from_stimulus', 'CNN_prediction_from_stimulus']
+    model_names_list = ['LSTM_prediction', 'LSTM_prediction', 'LSTM_prediction_from_Stimulus_only', 'LSTM_prediction_from_Stimulus_only', 'LSTM_prediction_with_Stimulus+EEG', 'LSTM_prediction_with_Stimulus+EEG','CNN_prediction_from_stimulus', 'CNN_prediction_from_stimulus',"LSTM+CNN_prediction_from_Stimulus+EEG", "LSTM+CNN_prediction_from_Stimulus+EEG"]
+
     with open("models.json", "r") as read_file:
             data = read_file.readlines() 
             plt.xlabel('time points')
             plt.ylabel('r value')
             time = np.arange(0, 160)
             for i in range(len(data)):
-                plt.plot(time, json.loads(data[i]), color_list[i], label = model_names_list[i])
-                plt.legend()
-            
+                print(i)
+                if i % 2 == 0:
+                    y = json.loads(data[i])
+                else:
+                    e = json.loads(data[i])
+                    plt.errorbar(time, y, e,  label = electrode_no + model_names_list[i])
+                    plt.legend()
+
             plt.savefig("../images/models_comparison.png")
             plt.figure()    
 
