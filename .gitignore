@@ -4,6 +4,7 @@ eeg_test/
 #Extra files 
 .idea
 .vscode/
+.DS_Store
 
 #Remove Cache Files
 src/__pycache__/*
