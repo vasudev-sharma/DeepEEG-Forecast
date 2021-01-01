@@ -1,8 +1,7 @@
 #!/bin/bash
-git checkout CNN
 pip install virtualenv
-virtualenv eeg_test --python=3.6
-source eeg_test/bin/activate
+virtualenv eeg_env --python=3.6
+source eeg_env/bin/activate
 pip install -r requirements.txt
 mkdir input
 mkdir images
