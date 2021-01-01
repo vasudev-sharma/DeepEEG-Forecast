@@ -1,7 +1,5 @@
 #!/bin/bash
-pip install virtualenv
-virtualenv eeg_env --python=3.6
-/bin/bash -c "eeg_env/bin/activate"
+
 pip install -r requirements.txt
 mkdir -p input
 mkdir -p images
