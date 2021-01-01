@@ -14,7 +14,7 @@ virtualenv eeg_env --python=3.6
 source eeg_env/bin/activate
 ```
 
-2. Now, in the terminal run
+3. Now, in the terminal run
 ```
 bash install_files.sh
 ```
