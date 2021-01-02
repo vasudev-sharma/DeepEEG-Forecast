@@ -1,7 +1,9 @@
 # Deep Learning Based EEG toolbox
-## 1. Prediction of EEG from EEG
-## 2. Prediction of EEG from Stimului
-## 3. Prediction of Stimuli from EEG
+## What is does?
+
+### 1. Predict EEG from EEG
+### 2. Predict EEG from Stimului
+### 3. Predict Stimuli from EEG
 ## Install
 1. Clone the repo
 ~~~
