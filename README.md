@@ -19,3 +19,10 @@ source eeg_env/bin/activate
 bash install_files.sh
 ```
 
+## Data
+5 subject EEG data downsampled at 160Hz
+Each subject has 
+- 64 channels
+- 192 trials
+- 840 time points (5.25s)
+Data can be found here - https://drive.google.com/drive/folders/1_gV6t5f2FDWo8OYTcAxsDxz4yhRcYKU0?usp=sharing
