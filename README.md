@@ -2,8 +2,11 @@
 ## What is does?
 
 ### 1. Predict EEG from EEG
+![EEG_from EEG](https://github.com/vs74/EEG/blob/master/.static/images/EEG_from_EEG.png)
 ### 2. Predict EEG from Stimului
+![EEG_from_Stimuli](https://github.com/vs74/EEG/blob/master/.static/images/EEG_from_Stimuli.png)
 ### 3. Predict Stimuli from EEG
+![Stimuli_from_EEG](https://github.com/vs74/EEG/blob/master/.static/images/Stimulus_from_EEG.png)
 ## Install
 1. Clone the repo
 ~~~
