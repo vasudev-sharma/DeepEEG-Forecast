@@ -35,3 +35,4 @@ Data can be found here - https://drive.google.com/drive/folders/1_gV6t5f2FDWo8OY
 ## TODO
 - [ ] Implement Attention model
 - [ ] Implement ESRNN model
+- [ ] Deploy the model 
