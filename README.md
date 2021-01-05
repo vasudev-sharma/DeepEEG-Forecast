@@ -40,9 +40,9 @@ We ❤️ contributions. Feel free to send us a PR.
 
 1. Create an issue if there is one.
 2. Fork the repo.
-3. Create your feature branch (git checkout -b your-feature).
-4. Add and commit your changes (git commit -am 'message').
-5. Push the branch (git push origin your-feature).
+3. Create your feature branch (`git checkout -b your-feature`).
+4. Add and commit your changes (`git commit -am 'message'`).
+5. Push the branch (`git push origin your-feature`).
 6. Create a new Pull Request.
 
 ## TODO
