@@ -1,5 +1,5 @@
 #Virtualenv
-eeg_test/
+eeg_env/
 
 #Extra files 
 .idea
