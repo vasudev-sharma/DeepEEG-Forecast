@@ -45,6 +45,10 @@ We ❤️ contributions. Feel free to send us a PR.
 5. Push the branch (`git push origin your-feature`).
 6. Create a new Pull Request.
 
+## Tracking the performance metrics and logging the models
+
+[Weights and Biases](https://wandb.ai/)
+
 ## TODO
 - [ ] Implement Attention model
 - [ ] Implement ESRNN model
