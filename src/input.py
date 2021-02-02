@@ -83,35 +83,32 @@ def get_data():
 
 
 
-
-# extract Y for Muti Channel Prediction
 def extract_Y (data, window, source, batch_trials, horizon = 1, multivariate = False):             
-   
-    '''
-      param: data - 3D Array of Shape [Channels, Trials, Timepoints], the EEG data is of the shape [64, 192, 840] 
-      param: window - window size 
-      param: source - List of Electrodes
-      param: trials - Trails of the data
-      param: horizon - Number of future time steps to be predicted
-      param: split- If modelling using LR set split to False, else set slit to True so that shape would be [Batch_Size, Window, Features]
-
-      return: 
+    #creation of a function to recover y - simplification of reading
 
     '''
-    time_points = data.shape[-1] 
+      param: data - (3D np.array of Shape [Channels, Trials, Timepoints]), the EEG data is of the shape [64, 192, 840] 
+      param: window - (int), window size 
+      param: source - (List of int),  Electrodes /Channels
+      param: batch_trials - (List of int), Trails of the data
+      param: horizon - (int), Number of future time steps to be predicted
+      param: split- (Boolean), If modelling using LR set split to False, else set slit to True so that shape would be [Batch_Size, Window, Features]
 
-    y = np.zeros((len(source),  len(batch_trials) * (time_points - window  - horizon + 1), horizon)) 
-    for idx, i in enumerate(source):                                                                      #reading the source list
+      return: (np array), shape: [Batch_size, horizon]
+
+    '''
+
+    y = []
+    for i in source:                                                                      #reading the source list
 
       y_tmp = []
       for j in batch_trials:
         tmp = rolling_window(data[i, j,window :], horizon)                                 #Compute the windowed numpy array for each electrode for each trail
         y_tmp.append(tmp)
-      y[idx] = np.vstack(y_tmp)
+      y.append(np.vstack(y_tmp))
 
-    if multivariate and model_name != "LR" and model_name!= "CNN_cross":
-      y= np.moveaxis(y, 0, -1)  
-                                                
+    if multivariate:
+      y= np.moveaxis(np.array(y), 0, -1)                                                  
     else: 
       y = np.hstack(y) 
     return(y) 
@@ -119,38 +116,39 @@ def extract_Y (data, window, source, batch_trials, horizon = 1, multivariate = F
 
 
 
-def extract_X (data,  window, source, batch_trials, horizon = 1, split = True):                     #creation of a function to recover x - simplification of reading
+
+
+def extract_X (data,  window, source, batch_trials, horizon = 1, split = True):                     
+    #creation of a function to recover x - simplification of reading
     '''
-      param: data - 3D Array of Shape [Channels, Trials, Timepoints], the EEG data is of the shape [64, 192, 840] 
-      param: window - window size 
-      param: source - List of Electrodes
-      param: trials - Trails of the data
-      param: horizon - Number of future time steps to be predicted
-      param: multivarite - Boolean, to indicate whether to perform multivariate prediction or not
+      param: data - (3D np.array of Shape [Channels, Trials, Timepoints]), the EEG data is of the shape [64, 192, 840] 
+      param: window - (int), window size 
+      param: source - (List of int),  Electrodes/ Channels
+      param: trials - (List of int), Trails of the data
+      param: horizon - (int), Number of future time steps to be predicted
+      param: multivarite - (Boolean), to indicate whether to perform multivariate prediction or not
 
       return: np array, shape: [Batch_size, window,channels]
 
     '''
    
-  
-    time_points = data.shape[-1]
+    time_points = data.shape[-1] 
     x = np.zeros((len(source),  len(batch_trials) * (time_points - window  - horizon + 1), window)) 
 
-    for idx, i in enumerate(source):                                      #reading the source list -> reading each electrode number if flip
+    for idx, i in enumerate(source):                                      #reading the source list
       x_tmp = []
       for j in batch_trials:
-        tmp = rolling_window(data[i, j, : -horizon], window)
-        x_tmp.append(tmp)
+        tmp = rolling_window(data[i, j, : -horizon], window)              #Compute the windowed numpy array for each electrode for each trail
+        x_tmp.append(tmp)                                                       
       x[idx] = np.vstack(x_tmp)
 
     x = np.hstack(x)
    
-    if split:
+    if split:                                                             #Split the np array into number of features such that intial array [Batch_size, window * Channels] becomes new array of shape [Batch_size, window, channels]
         x = np.array(np.split(x, len(source), axis = -1))
         x = np.moveaxis(x, 0, -1)
     
     return x
-
 
 
 
