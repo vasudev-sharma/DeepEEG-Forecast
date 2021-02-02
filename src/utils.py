@@ -7,10 +7,19 @@ from sklearn.preprocessing import MinMaxScaler
 import os 
 import json
 
-def rolling_window(a, window):
-    shape = a.shape[:-1] + (a.shape[-1] - window + 1, window)
-    strides = a.strides + (a.strides[-1],)
-    return np.lib.stride_tricks.as_strided(a, shape=shape, strides=strides)
+#Helper function to split the data into overlapping windows of size = window 
+def rolling_window(array, window):
+
+    '''
+    param: array - (np.array), 1D array which needs to reshaped into overlapping windows
+    param:  window - (int), window size 
+
+    return: (2D np.array) of shape [Samples, Horizon]
+    '''
+
+    shape = array.shape[:-1] + (array.shape[-1] - window + 1, window)
+    strides = array.strides + (array.strides[-1],)
+    return np.lib.stride_tricks.as_strided(array, shape=shape, strides=strides)
 
 def preprocess_data(data):
     #Reshape 3d array to 2d so it get's prrocessed by scikit learn
