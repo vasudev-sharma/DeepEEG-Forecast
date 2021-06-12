@@ -36,7 +36,7 @@ Each subject has
 Data can be found here - https://drive.google.com/drive/folders/1_gV6t5f2FDWo8OYTcAxsDxz4yhRcYKU0?usp=sharing
 
 ## Contributing
-We ❤️ contributions. Feel free to send us a PR.
+We ❤️ contributions. Feel free to send us a PR or raise an issue.
 
 1. Create an issue if there is one.
 2. Fork the repo.
