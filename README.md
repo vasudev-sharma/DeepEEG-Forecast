@@ -1,4 +1,4 @@
-# Deep Learning Based EEG toolbox
+# Deep Learning Based EEG forecasting toolbox
 ## What is does?
 
 ### 1. Predict EEG from EEG.
