@@ -1,4 +1,5 @@
 # Deep Learning Based EEG forecasting toolbox
+
 ## What is does?
 
 ### 1. Predict EEG from EEG.
@@ -11,7 +12,7 @@
 ## Install
 1. Clone the repo
 ~~~
-git clone https://github.com/vasudev-sharma/EEG-Forecast
+git clone https://github.com/vasudev-sharma/DeepEEG-Forecast
 cd EEG-Forecast
 ~~~
 2. Set up Virtual Environment
@@ -50,6 +51,8 @@ We ❤️ contributions. Feel free to send us a PR or raise an issue.
 [Weights and Biases](https://wandb.ai/)
 
 ## TODO
+- [ ] Add instructions in readme to perform all the 3 tasks
 - [ ] Implement Attention model
 - [ ] Implement ESRNN model
 - [ ] Deploy the model 
+- [ ] Refactor Code
